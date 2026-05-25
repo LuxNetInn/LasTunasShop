@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Las TunasShop — Las Tunas y sus Municipios</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --cuban-red: #D62828;
+  --cuban-blue: #003F87;
+  --gold: #F4A60D;
+  --cream: #FFF8EE;
+  --dark: #0D0D0D;
+  --mid: #2A2A2A;
+  --text: #1A1A1A;
+  --muted: #6B6B6B;
+  --border: #E5DDD0;
+  --card-bg: #FFFCF7;
+  --success: #1A7F4B;
+  --usa-blue: #002868;
+  --usa-red: #BF0A30;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ══ HEADER ══ */
+header {
+  background: var(--dark);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 3px solid var(--gold);
+}
+
+.header-top {
+  background: linear-gradient(90deg, var(--cuban-red), var(--cuban-blue));
+  text-align: center;
+  padding: 6px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  gap: 20px;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+.logo span { color: var(--gold); }
+
+.header-actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.cart-btn {
+  background: var(--gold);
+  color: var(--dark);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .2s;
+  position: relative;
+}
+.cart-btn:hover { background: #e0940a; transform: translateY(-1px); }
+.cart-count {
+  background: var(--cuban-red);
+  color: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ══ HERO ══ */
+.hero {
+  background: linear-gradient(135deg, var(--cuban-blue) 0%, var(--dark) 50%, var(--cuban-red) 100%);
+  color: #fff;
+  padding: 70px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(32px, 5vw, 58px);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  position: relative;
+}
+.hero h1 em { color: var(--gold); font-style: normal; }
+.hero p {
+  font-size: 17px;
+  opacity: .85;
+  max-width: 560px;
+  margin: 0 auto 32px;
+  position: relative;
+}
+.flags {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 40px;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+/* ══ PAYMENT BADGES ══ */
+.payment-badges {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 20px 32px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+}
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1.5px solid var(--border);
+  background: #fff;
+}
+.badge.paypal { color: #003087; border-color: #003087; }
+.badge.crypto { color: #F7931A; border-color: #F7931A; }
+.badge.transfer { color: var(--cuban-blue); border-color: var(--cuban-blue); }
+.badge.cuba { color: var(--cuban-red); border-color: var(--cuban-red); }
+
+/* ══ MAIN LAYOUT ══ */
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+/* ══ PRODUCTS GRID ══ */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 60px;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  transition: all .25s;
+  cursor: pointer;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.1);
+  border-color: var(--gold);
+}
+
+.product-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  background: linear-gradient(135deg, #f0e8d8, #e8dcc8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+}
+
+.product-info {
+  padding: 18px;
+}
+
+.product-tag {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--cuban-red);
+  margin-bottom: 6px;
+}
+
+.product-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.product-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.product-prices {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.price-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--cream);
+  border-radius: 8px;
+  padding: 6px 12px;
+  flex: 1;
+  min-width: 80px;
+}
+.price-tag .flag { font-size: 16px; }
+.price-tag .amount {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--cuban-blue);
+}
+.price-tag .currency { font-size: 10px; color: var(--muted); }
+
+.qty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.qty-label { font-size: 13px; color: var(--muted); }
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.qty-btn {
+  width: 28px; height: 28px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.qty-btn:hover { background: var(--gold); border-color: var(--gold); }
+.qty-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.add-btn {
+  width: 100%;
+  padding: 11px;
+  background: var(--cuban-blue);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all .2s;
+}
+.add-btn:hover { background: var(--cuban-red); }
+.add-btn.added { background: var(--success); }
+
+/* ══ MODAL ══ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  overflow-y: auto;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; align-items: flex-start; justify-content: center; }
+
+.modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 680px;
+  margin: auto;
+  overflow: hidden;
+  animation: slideUp .3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity:0; transform: translateY(30px); }
+  to { opacity:1; transform: translateY(0); }
+}
+
+.modal-header {
+  background: linear-gradient(135deg, var(--cuban-blue), var(--dark));
+  color: #fff;
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-header h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+}
+.close-btn {
+  background: rgba(255,255,255,.15);
+  border: none;
+  color: #fff;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body { padding: 28px; }
+
+/* Cart Items */
+.cart-items { margin-bottom: 24px; }
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cart-item-emoji { font-size: 32px; }
+.cart-item-info { flex: 1; }
+.cart-item-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+}
+.cart-item-qty { font-size: 13px; color: var(--muted); }
+.cart-item-price {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--cuban-blue);
+}
+.cart-item-remove {
+  background: none;
+  border: none;
+  color: var(--cuban-red);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.cart-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 24px;
+}
+.form-section-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--cuban-blue);
+}
+
+.payer-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.payer-option {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+}
+.payer-option:hover { border-color: var(--gold); background: #fffdf5; }
+.payer-option.selected {
+  border-color: var(--cuban-blue);
+  background: #EEF4FF;
+}
+.payer-option .flag { font-size: 28px; display: block; margin-bottom: 6px; }
+.payer-option .label {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+}
+.payer-option .sublabel { font-size: 12px; color: var(--muted); }
+
+.payment-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.payment-method {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.payment-method:hover { border-color: var(--gold); }
+.payment-method.selected { border-color: var(--success); background: #EDFBF3; }
+.payment-method .icon { font-size: 22px; }
+.payment-method .name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+}
+.payment-method .desc { font-size: 11px; color: var(--muted); }
+.payment-method input[type=radio] { display: none; }
+
+/* Crypto sub-selector */
+.crypto-coins {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.crypto-coin {
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.crypto-coin:hover, .crypto-coin.selected { background: #F7931A; color: #fff; border-color: #F7931A; }
+.crypto-coin.eth.selected { background: #627EEA; border-color: #627EEA; }
+.crypto-coin.usdt.selected { background: #26A17B; border-color: #26A17B; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.form-grid.full { grid-template-columns: 1fr; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+}
+.field input, .field textarea, .field select {
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  transition: border .15s;
+  background: #fff;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  outline: none;
+  border-color: var(--cuban-blue);
+}
+.field textarea { resize: vertical; min-height: 80px; }
+
+/* Order Summary */
+.order-summary {
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.summary-row.total {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--cuban-blue);
+  border-top: 2px solid var(--border);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+/* PayPal section */
+.paypal-info {
+  background: #EEF4FF;
+  border: 1.5px solid #003087;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 10px;
+}
+.paypal-link {
+  background: #003087;
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 10px;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  justify-content: center;
+  transition: all .2s;
+}
+.paypal-link:hover { background: #002070; }
+
+.crypto-info {
+  background: #FFF8EE;
+  border: 1.5px solid #F7931A;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 10px;
+}
+.crypto-address {
+  font-family: monospace;
+  font-size: 12px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  word-break: break-all;
+  border: 1px solid var(--border);
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.copy-btn {
+  background: var(--gold);
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.transfer-info {
+  background: #F0FFF4;
+  border: 1.5px solid var(--success);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--cuban-red), var(--cuban-blue));
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: .5px;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.submit-btn:hover { opacity: .9; transform: translateY(-1px); }
+.submit-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* Success screen */
+.success-screen {
+  text-align: center;
+  padding: 40px 28px;
+}
+.success-screen .check {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+.success-screen h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: var(--success);
+}
+.success-screen p {
+  color: var(--muted);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+.success-details {
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 24px;
+  background: var(--dark);
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all .3s;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-left: 4px solid var(--success); }
+.toast.error { border-left: 4px solid var(--cuban-red); }
+
+/* Admin config panel */
+.admin-bar {
+  background: var(--mid);
+  color: #fff;
+  padding: 0;
+  border-top: 1px solid #333;
+}
+.admin-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #aaa;
+  padding: 12px 32px;
+  text-align: left;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.admin-toggle:hover { color: #fff; }
+.admin-panel {
+  display: none;
+  padding: 24px 32px;
+  border-top: 1px solid #333;
+  background: #1a1a1a;
+}
+.admin-panel.open { display: block; }
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.admin-field label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.admin-field input {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.admin-field input:focus { outline: none; border-color: var(--gold); }
+.admin-save {
+  background: var(--gold);
+  color: var(--dark);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+/* ══ PRODUCT MANAGER ══ */
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0;
+}
+.admin-tab {
+  background: none;
+  border: none;
+  color: #888;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all .2s;
+}
+.admin-tab:hover { color: #ccc; }
+.admin-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+.admin-section { display: none; }
+.admin-section.active { display: block; }
+
+.products-manager {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.pm-card {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.pm-card:hover { border-color: var(--gold); }
+.pm-card-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  position: relative;
+  cursor: pointer;
+}
+.pm-card-img img { width:100%; height:100%; object-fit:cover; }
+.pm-card-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .2s;
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+  gap: 6px;
+}
+.pm-card-img:hover .pm-card-img-overlay { opacity: 1; }
+.pm-card-body { padding: 14px; }
+.pm-card-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.pm-inline-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+.pm-inline-field label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.pm-inline-field input,
+.pm-inline-field textarea,
+.pm-inline-field select {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  color: #fff;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  width: 100%;
+}
+.pm-inline-field input:focus,
+.pm-inline-field textarea:focus { outline: none; border-color: var(--gold); }
+.pm-inline-field textarea { resize: vertical; min-height: 60px; }
+.pm-price-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.pm-stock-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.pm-stock-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+.pm-stock-badge.instock { background: #1a3d2b; color: #4ade80; }
+.pm-stock-badge.outstock { background: #3d1a1a; color: #f87171; }
+.pm-card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid #2a2a2a;
+}
+.pm-btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all .15s;
+}
+.pm-btn.save { background: var(--gold); color: var(--dark); }
+.pm-btn.save:hover { background: #e0940a; }
+.pm-btn.delete { background: #3d1a1a; color: #f87171; }
+.pm-btn.delete:hover { background: #5a2020; }
+.pm-btn.toggle { background: #1a2a3d; color: #60a5fa; }
+.pm-btn.toggle:hover { background: #1e3a5f; }
+
+.add-product-btn {
+  background: linear-gradient(135deg, var(--cuban-blue), var(--success));
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  transition: opacity .2s;
+}
+.add-product-btn:hover { opacity: .85; }
+
+.admin-field textarea {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  resize: vertical;
+  min-height: 60px;
+}
+
+@media (max-width: 600px) {
+  .header-main { padding: 12px 16px; }
+  main { padding: 24px 16px; }
+  .payer-selector, .payment-methods { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .modal-body { padding: 18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">Las Tunas y sus Municipios · Pagos desde EE.UU. y Las Tunas · USDT BEP-20 aceptado</div>
+  <div class="header-main">
+    <div class="logo">Las Tunas<span>Shop</span></div>
+    <div class="header-actions">
+      <button class="cart-btn" onclick="openCart()">
+        <i class="fas fa-shopping-cart"></i>
+        Mi Carrito
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h1><em>Las Tunas</em> y sus<br>Municipios</h1>
+  <p>Entregamos en Las Tunas y todos sus municipios. Paga desde EE.UU. con PayPal o USDT BEP-20, o desde Las Tunas con EnZona, Transfermóvil o efectivo.</p>
+</div>
+
+<!-- PAYMENT BADGES -->
+<div class="payment-badges">
+  <div class="badge paypal"><i class="fab fa-paypal"></i> PayPal</div>
+  <div class="badge crypto">₮ USDT (BSC BEP-20)</div>
+
+  <div class="badge cuba"><i class="fas fa-money-bill"></i> Efectivo</div>
+</div>
+
+<!-- PRODUCTS -->
+<main>
+  <div class="section-title">🛍️ Productos — Entrega en Las Tunas y Municipios</div>
+  <div class="products-grid" id="productsGrid"></div>
+</main>
+
+<!-- CART MODAL -->
+<div class="modal-overlay" id="cartModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🛒 Tu Carrito de Compras</h2>
+      <button class="close-btn" onclick="closeCart()">✕</button>
+    </div>
+    <div class="modal-body" id="cartModalBody">
+      <!-- Dynamic content -->
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ADMIN BAR -->
+<div class="admin-bar">
+  <button class="admin-toggle" onclick="toggleAdmin()">
+    <span>⚙️ Panel de Administración</span>
+    <span id="adminArrow">▼</span>
+  </button>
+  <div class="admin-panel" id="adminPanel">
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('config', this)">⚙️ Configuración</button>
+      <button class="admin-tab" onclick="switchAdminTab('rates', this)">💱 Tasas y Fees</button>
+      <button class="admin-tab" onclick="switchAdminTab('products', this)">📦 Gestionar Productos</button>
+    </div>
+
+    <!-- TAB: CONFIGURACIÓN -->
+    <div class="admin-section active" id="tab-config">
+      <div style="color:#ccc; font-size:13px; margin-bottom:16px;">Configura tus datos de pago y contacto. Los pedidos se notificarán a los correos registrados.</div>
+      <div class="admin-grid">
+        <div class="admin-field">
+          <label>Email Admin 1 (tú)</label>
+          <input type="email" id="adminEmail1" placeholder="admin@ejemplo.com">
+        </div>
+        <div class="admin-field">
+          <label>Email Admin 2</label>
+          <input type="email" id="adminEmail2" placeholder="coadmin@ejemplo.com">
+        </div>
+        <div class="admin-field">
+          <label>Link PayPal.Me</label>
+          <input type="text" id="paypalLink" placeholder="https://paypal.me/tunombre">
+        </div>
+        <div class="admin-field">
+          <label>Email PayPal</label>
+          <input type="email" id="paypalEmail" placeholder="pagos@ejemplo.com">
+        </div>
+        <div class="admin-field">
+          <label>Dirección USDT (BSC BEP-20)</label>
+          <input type="text" id="usdtAddress" placeholder="0x...">
+        </div>
+
+        <div class="admin-field">
+          <label>API Key EmailJS (Service ID)</label>
+          <input type="text" id="emailjsService" placeholder="service_xxxxxxx">
+        </div>
+        <div class="admin-field">
+          <label>EmailJS Template ID</label>
+          <input type="text" id="emailjsTemplate" placeholder="template_xxxxxxx">
+        </div>
+        <div class="admin-field">
+          <label>EmailJS Public Key</label>
+          <input type="text" id="emailjsPublic" placeholder="xxxxxxxxxxxxxxxxxxxx">
+        </div>
+      </div>
+      <button class="admin-save" onclick="saveAdminConfig()">💾 Guardar Configuración</button>
+      <div style="margin-top:16px; padding:12px; background:#2a2a2a; border-radius:8px; font-size:12px; color:#888; line-height:1.6;">
+        <strong style="color:#ccc;">📧 Para notificaciones de email:</strong><br>
+        1. Crea cuenta gratis en <a href="https://www.emailjs.com" target="_blank" style="color:var(--gold)">emailjs.com</a><br>
+        2. Crea un servicio de email (Gmail recomendado)<br>
+        3. Crea una plantilla con variables: <code style="color:#aaa">{{order_id}}, {{customer_name}}, {{items}}, {{total}}, {{payment}}, {{payer_location}}</code><br>
+        4. Ingresa tus credenciales arriba
+      </div>
+    </div>
+
+    <!-- TAB: TASAS Y FEES -->
+    <div class="admin-section" id="tab-rates">
+      <div style="color:#ccc; font-size:13px; margin-bottom:20px;">Define las tasas de cambio y los cargos adicionales que se aplican a cada pedido. Se muestran desglosados al cliente antes de pagar.</div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; margin-bottom:24px;">
+
+        <!-- TASAS DE CAMBIO -->
+        <div style="background:#222; border:1px solid #333; border-radius:12px; padding:18px;">
+          <div style="font-family:'Syne',sans-serif; font-weight:700; color:var(--gold); font-size:14px; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            💱 Tasas de Cambio
+          </div>
+          <div class="admin-field" style="margin-bottom:12px;">
+            <label>USD → CUP (tasa oficial / informal)</label>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="color:#888; font-size:13px;">1 USD =</span>
+              <input type="number" id="rate-usd-cup" min="1" step="1" placeholder="ej: 300" style="flex:1">
+              <span style="color:#888; font-size:13px;">CUP</span>
+            </div>
+          </div>
+          <div class="admin-field" style="margin-bottom:12px;">
+            <label>USD → USDT (equivalencia)</label>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="color:#888; font-size:13px;">1 USD =</span>
+              <input type="number" id="rate-usd-usdt" min="0.01" step="0.01" placeholder="ej: 1.00" style="flex:1">
+              <span style="color:#888; font-size:13px;">USDT</span>
+            </div>
+          </div>
+          <div style="background:#1a1a1a; border-radius:8px; padding:10px; font-size:12px; color:#666; margin-top:8px; line-height:1.7;">
+            <strong style="color:#888;">Vista previa:</strong><br>
+            <span id="rate-preview">—</span>
+          </div>
+        </div>
+
+        <!-- FEES -->
+        <div style="background:#222; border:1px solid #333; border-radius:12px; padding:18px;">
+          <div style="font-family:'Syne',sans-serif; font-weight:700; color:var(--gold); font-size:14px; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            🚚 Fee de Transportación
+          </div>
+          <div class="admin-field" style="margin-bottom:12px;">
+            <label>Tipo de cargo de transportación</label>
+            <select id="fee-transport-type" onchange="updateFeePreview()">
+              <option value="fixed">Monto fijo (USD)</option>
+              <option value="percent">Porcentaje del subtotal (%)</option>
+              <option value="none">Sin cargo de transportación</option>
+            </select>
+          </div>
+          <div class="admin-field" style="margin-bottom:12px;" id="fee-transport-val-wrap">
+            <label id="fee-transport-val-label">Monto (USD)</label>
+            <input type="number" id="fee-transport-val" min="0" step="0.01" placeholder="ej: 5.00" oninput="updateFeePreview()">
+          </div>
+          <div class="admin-field">
+            <label>Descripción (aparece al cliente)</label>
+            <input type="text" id="fee-transport-label" placeholder="ej: Transportación a Las Tunas" oninput="updateFeePreview()">
+          </div>
+        </div>
+
+        <div style="background:#222; border:1px solid #333; border-radius:12px; padding:18px;">
+          <div style="font-family:'Syne',sans-serif; font-weight:700; color:var(--gold); font-size:14px; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+            ⚙️ Fee de Procesamiento
+          </div>
+          <div class="admin-field" style="margin-bottom:12px;">
+            <label>Tipo de cargo de procesamiento</label>
+            <select id="fee-process-type" onchange="updateFeePreview()">
+              <option value="percent">Porcentaje del subtotal (%)</option>
+              <option value="fixed">Monto fijo (USD)</option>
+              <option value="none">Sin cargo de procesamiento</option>
+            </select>
+          </div>
+          <div class="admin-field" style="margin-bottom:12px;" id="fee-process-val-wrap">
+            <label id="fee-process-val-label">Porcentaje (%)</label>
+            <input type="number" id="fee-process-val" min="0" step="0.1" placeholder="ej: 5" oninput="updateFeePreview()">
+          </div>
+          <div class="admin-field">
+            <label>Descripción (aparece al cliente)</label>
+            <input type="text" id="fee-process-label" placeholder="ej: Tarifa de gestión" oninput="updateFeePreview()">
+          </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div style="background:#1a2a1a; border:1px solid #2a4a2a; border-radius:12px; padding:18px;">
+          <div style="font-family:'Syne',sans-serif; font-weight:700; color:#4ade80; font-size:14px; margin-bottom:14px;">
+            👁 Vista Previa del Resumen (pedido de $50 USD)
+          </div>
+          <div id="fee-preview-box" style="font-size:13px; line-height:2; color:#ccc;"></div>
+        </div>
+      </div>
+
+      <button class="admin-save" onclick="saveRatesConfig()">💾 Guardar Tasas y Fees</button>
+    </div>
+
+    <!-- TAB: PRODUCTOS -->
+    <div class="admin-section" id="tab-products">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+        <div style="color:#ccc; font-size:13px;">Añade, edita o elimina productos. Las fotos se guardan en el navegador (base64).</div>
+        <button class="add-product-btn" onclick="addNewProduct()">
+          <i class="fas fa-plus"></i> Nuevo Producto
+        </button>
+      </div>
+      <div class="products-manager" id="productsManager"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+
+// ══════════════════════════════════════
+// PRODUCTOS — DINÁMICOS (localStorage)
+// ══════════════════════════════════════
+const DEFAULT_PRODUCTS = [
+  { id:1, emoji:'📦', category:'Alimentos', name:'Combo Básico Mensual', desc:'Arroz, frijoles, aceite, azúcar y productos esenciales para un mes.', priceUSD:45, priceCUP:4500, stock:10, active:true, image:'' },
+  { id:2, emoji:'🧴', category:'Higiene', name:'Kit de Higiene Personal', desc:'Jabón, champú, pasta dental, desodorante y otros productos de aseo.', priceUSD:28, priceCUP:2800, stock:15, active:true, image:'' },
+  { id:3, emoji:'💊', category:'Medicamentos', name:'Botiquín Familiar', desc:'Analgésicos, antibióticos básicos, vitaminas y material de cura.', priceUSD:55, priceCUP:5500, stock:8, active:true, image:'' },
+  { id:4, emoji:'👕', category:'Ropa', name:'Pack Ropa Adulto', desc:'Camisas, pantalones y ropa interior. Especifica talla al ordenar.', priceUSD:60, priceCUP:6000, stock:20, active:true, image:'' },
+  { id:5, emoji:'🍼', category:'Bebé', name:'Kit Bebé Completo', desc:'Pañales, leche en polvo, ropa y artículos para bebé hasta 1 año.', priceUSD:75, priceCUP:7500, stock:5, active:true, image:'' },
+  { id:6, emoji:'💻', category:'Tecnología', name:'Recarga de Datos (3GB)', desc:'Recarga de datos móviles ETECSA 3GB. Entrega en 24h.', priceUSD:12, priceCUP:1200, stock:99, active:true, image:'' },
+  { id:7, emoji:'🛠️', category:'Herramientas', name:'Kit Herramientas Básico', desc:'Martillo, destornilladores, alicates y herramientas esenciales del hogar.', priceUSD:35, priceCUP:3500, stock:12, active:true, image:'' },
+  { id:8, emoji:'🍗', category:'Alimentos', name:'Pack Proteínas', desc:'Pollo, carne de res y atún en lata para una familia por dos semanas.', priceUSD:50, priceCUP:5000, stock:7, active:true, image:'' },
+];
+
+function loadProducts() {
+  const saved = localStorage.getItem('cubashop_products');
+  return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+}
+function saveProducts() {
+  localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+}
+let PRODUCTS = loadProducts();
+
+// ══════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════
+let cart = [];
+let config = loadConfig();
+let selectedPayer = null;
+let selectedPayment = null;
+let selectedCrypto = 'btc';
+let orderStep = 'cart'; // cart | form | payment | success
+
+function loadConfig() {
+  const saved = localStorage.getItem('cubashop_config');
+  const defaults = {
+    adminEmail1: '', adminEmail2: '',
+    paypalLink: '', paypalEmail: '',
+    usdtAddress: '',
+    emailjsService: '', emailjsTemplate: '', emailjsPublic: '',
+    rateUsdCup: 300,
+    rateUsdUsdt: 1.00,
+    feeTransportType: 'fixed',
+    feeTransportVal: 5,
+    feeTransportLabel: 'Transportación a Las Tunas',
+    feeProcessType: 'percent',
+    feeProcessVal: 5,
+    feeProcessLabel: 'Tarifa de gestión',
+  };
+  return saved ? Object.assign({}, defaults, JSON.parse(saved)) : defaults;
+}
+
+function saveAdminConfig() {
+  config.adminEmail1 = document.getElementById('adminEmail1').value;
+  config.adminEmail2 = document.getElementById('adminEmail2').value;
+  config.paypalLink = document.getElementById('paypalLink').value;
+  config.paypalEmail = document.getElementById('paypalEmail').value;
+  config.usdtAddress = document.getElementById('usdtAddress').value;
+
+  config.emailjsService = document.getElementById('emailjsService').value;
+  config.emailjsTemplate = document.getElementById('emailjsTemplate').value;
+  config.emailjsPublic = document.getElementById('emailjsPublic').value;
+  localStorage.setItem('cubashop_config', JSON.stringify(config));
+  showToast('✅ Configuración guardada correctamente', 'success');
+}
+
+function populateAdminFields() {
+  document.getElementById('adminEmail1').value = config.adminEmail1 || '';
+  document.getElementById('adminEmail2').value = config.adminEmail2 || '';
+  document.getElementById('paypalLink').value = config.paypalLink || '';
+  document.getElementById('paypalEmail').value = config.paypalEmail || '';
+  document.getElementById('usdtAddress').value = config.usdtAddress || '';
+  document.getElementById('emailjsService').value = config.emailjsService || '';
+  document.getElementById('emailjsTemplate').value = config.emailjsTemplate || '';
+  document.getElementById('emailjsPublic').value = config.emailjsPublic || '';
+}
+
+function populateRatesFields() {
+  document.getElementById('rate-usd-cup').value = config.rateUsdCup || 300;
+  document.getElementById('rate-usd-usdt').value = config.rateUsdUsdt || 1;
+  document.getElementById('fee-transport-type').value = config.feeTransportType || 'fixed';
+  document.getElementById('fee-transport-val').value = config.feeTransportVal ?? 5;
+  document.getElementById('fee-transport-label').value = config.feeTransportLabel || 'Transportación a Las Tunas';
+  document.getElementById('fee-process-type').value = config.feeProcessType || 'percent';
+  document.getElementById('fee-process-val').value = config.feeProcessVal ?? 5;
+  document.getElementById('fee-process-label').value = config.feeProcessLabel || 'Tarifa de gestión';
+  updateFeePreview();
+}
+
+function saveRatesConfig() {
+  config.rateUsdCup      = parseFloat(document.getElementById('rate-usd-cup').value) || 300;
+  config.rateUsdUsdt     = parseFloat(document.getElementById('rate-usd-usdt').value) || 1;
+  config.feeTransportType  = document.getElementById('fee-transport-type').value;
+  config.feeTransportVal   = parseFloat(document.getElementById('fee-transport-val').value) || 0;
+  config.feeTransportLabel = document.getElementById('fee-transport-label').value || 'Transportación';
+  config.feeProcessType    = document.getElementById('fee-process-type').value;
+  config.feeProcessVal     = parseFloat(document.getElementById('fee-process-val').value) || 0;
+  config.feeProcessLabel   = document.getElementById('fee-process-label').value || 'Procesamiento';
+  localStorage.setItem('cubashop_config', JSON.stringify(config));
+  showToast('✅ Tasas y fees guardados', 'success');
+  updateFeePreview();
+}
+
+function updateFeePreview() {
+  const transportType  = document.getElementById('fee-transport-type')?.value || 'none';
+  const transportVal   = parseFloat(document.getElementById('fee-transport-val')?.value) || 0;
+  const transportLabel = document.getElementById('fee-transport-label')?.value || 'Transportación';
+  const processType    = document.getElementById('fee-process-type')?.value || 'none';
+  const processVal     = parseFloat(document.getElementById('fee-process-val')?.value) || 0;
+  const processLabel   = document.getElementById('fee-process-label')?.value || 'Procesamiento';
+  const rateUsdCup     = parseFloat(document.getElementById('rate-usd-cup')?.value) || 300;
+  const rateUsdUsdt    = parseFloat(document.getElementById('rate-usd-usdt')?.value) || 1;
+
+  // Update label hints
+  const tvl = document.getElementById('fee-transport-val-label');
+  if (tvl) tvl.textContent = transportType === 'percent' ? 'Porcentaje (%)' : 'Monto (USD)';
+  const pvl = document.getElementById('fee-process-val-label');
+  if (pvl) pvl.textContent = processType === 'fixed' ? 'Monto (USD)' : 'Porcentaje (%)';
+
+  const sample = 50;
+  const transportFee = transportType === 'none' ? 0 : transportType === 'fixed' ? transportVal : sample * transportVal / 100;
+  const processFee   = processType   === 'none' ? 0 : processType   === 'fixed' ? processVal   : sample * processVal   / 100;
+  const grandTotal   = sample + transportFee + processFee;
+
+  const rateRow = `1 USD = ${rateUsdCup} CUP &nbsp;|&nbsp; 1 USD = ${rateUsdUsdt} USDT`;
+  const box = document.getElementById('fee-preview-box');
+  if (!box) return;
+  box.innerHTML = `
+    <div style="border-bottom:1px solid #2a4a2a;padding-bottom:6px;margin-bottom:6px;font-size:11px;color:#4ade80">${rateRow}</div>
+    <div style="display:flex;justify-content:space-between"><span>Subtotal productos</span><span>$${sample.toFixed(2)}</span></div>
+    ${transportType !== 'none' ? `<div style="display:flex;justify-content:space-between;color:#facc15"><span>+ ${transportLabel}${transportType==='percent'?` (${transportVal}%)`:`(fijo)`}</span><span>$${transportFee.toFixed(2)}</span></div>` : ''}
+    ${processType !== 'none' ? `<div style="display:flex;justify-content:space-between;color:#facc15"><span>+ ${processLabel}${processType==='percent'?` (${processVal}%)`:`(fijo)`}</span><span>$${processFee.toFixed(2)}</span></div>` : ''}
+    <div style="display:flex;justify-content:space-between;font-weight:800;color:#fff;border-top:1px solid #2a4a2a;padding-top:6px;margin-top:4px;font-size:15px"><span>TOTAL USD</span><span>$${grandTotal.toFixed(2)}</span></div>
+    <div style="display:flex;justify-content:space-between;color:#888;font-size:12px"><span>TOTAL CUP</span><span>${Math.round(grandTotal * rateUsdCup).toLocaleString()} CUP</span></div>
+    <div style="display:flex;justify-content:space-between;color:#26A17B;font-size:12px"><span>TOTAL USDT</span><span>${(grandTotal * rateUsdUsdt).toFixed(2)} USDT</span></div>
+  `;
+
+  // also update rate preview mini
+  const rp = document.getElementById('rate-preview');
+  if (rp) rp.innerHTML = `$1 USD = <strong>${rateUsdCup} CUP</strong> &nbsp;|&nbsp; $1 USD = <strong>${rateUsdUsdt} USDT</strong>`;
+}
+
+// ── Fee calculation helpers used throughout ──
+function calcFees(subtotalUSD) {
+  const transportType = config.feeTransportType || 'none';
+  const transportVal  = parseFloat(config.feeTransportVal) || 0;
+  const processType   = config.feeProcessType || 'none';
+  const processVal    = parseFloat(config.feeProcessVal) || 0;
+  const transportFee  = transportType === 'none' ? 0 : transportType === 'fixed' ? transportVal : subtotalUSD * transportVal / 100;
+  const processFee    = processType   === 'none' ? 0 : processType   === 'fixed' ? processVal   : subtotalUSD * processVal   / 100;
+  return { transportFee, processFee, total: subtotalUSD + transportFee + processFee };
+}
+
+function fmtCUP(usd) {
+  return Math.round(usd * (config.rateUsdCup || 300)).toLocaleString();
+}
+function fmtUSDT(usd) {
+  return (usd * (config.rateUsdUsdt || 1)).toFixed(2);
+}
+
+// ══════════════════════════════════════
+// ADMIN TABS
+// ══════════════════════════════════════
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab === 'products') renderProductsManager();
+  if (tab === 'rates') populateRatesFields();
+}
+
+// ══════════════════════════════════════
+// PRODUCTS MANAGER
+// ══════════════════════════════════════
+function renderProductsManager() {
+  const container = document.getElementById('productsManager');
+  container.innerHTML = PRODUCTS.map(p => `
+    <div class="pm-card" id="pmc-${p.id}">
+      <div class="pm-card-img" onclick="triggerImageUpload(${p.id})">
+        ${p.image
+          ? `<img src="${p.image}" alt="${p.name}">`
+          : `<span>${p.emoji || '📦'}</span>`}
+        <div class="pm-card-img-overlay">
+          <i class="fas fa-camera"></i> Cambiar foto
+        </div>
+        <input type="file" id="imgfile-${p.id}" accept="image/*" style="display:none" onchange="handleImageUpload(${p.id}, this)">
+      </div>
+      <div class="pm-card-body">
+        <div class="pm-inline-field">
+          <label>Nombre del producto</label>
+          <input type="text" id="pm-name-${p.id}" value="${escHtml(p.name)}">
+        </div>
+        <div class="pm-inline-field">
+          <label>Categoría</label>
+          <select id="pm-cat-${p.id}">
+            ${['Alimentos','Higiene','Medicamentos','Ropa','Bebé','Tecnología','Herramientas','Otro'].map(c =>
+              `<option value="${c}" ${p.category===c?'selected':''}>${c}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div class="pm-inline-field">
+          <label>Descripción</label>
+          <textarea id="pm-desc-${p.id}">${escHtml(p.desc)}</textarea>
+        </div>
+        <div class="pm-inline-field">
+          <label>Emoji (si no hay foto)</label>
+          <input type="text" id="pm-emoji-${p.id}" value="${p.emoji || '📦'}" style="font-size:20px;">
+        </div>
+        <div class="pm-price-row">
+          <div class="pm-inline-field">
+            <label>Precio USD ($)</label>
+            <input type="number" id="pm-usd-${p.id}" value="${p.priceUSD}" min="0" step="0.01">
+          </div>
+          <div class="pm-inline-field">
+            <label>Precio CUP</label>
+            <input type="number" id="pm-cup-${p.id}" value="${p.priceCUP}" min="0">
+          </div>
+        </div>
+        <div class="pm-stock-row">
+          <div class="pm-inline-field" style="flex:1;margin-bottom:0">
+            <label>Inventario (unidades)</label>
+            <input type="number" id="pm-stock-${p.id}" value="${p.stock ?? 99}" min="0">
+          </div>
+          <div class="pm-stock-badge ${(p.stock > 0 && p.active !== false) ? 'instock' : 'outstock'}" id="pm-badge-${p.id}">
+            ${p.active === false ? 'Oculto' : (p.stock > 0 ? 'Disponible' : 'Agotado')}
+          </div>
+        </div>
+      </div>
+      <div class="pm-card-actions">
+        <button class="pm-btn toggle" onclick="toggleProductActive(${p.id})">
+          ${p.active === false ? '👁 Mostrar' : '🚫 Ocultar'}
+        </button>
+        <button class="pm-btn save" onclick="saveProduct(${p.id})">
+          <i class="fas fa-save"></i> Guardar
+        </button>
+        <button class="pm-btn delete" onclick="deleteProduct(${p.id})">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function triggerImageUpload(id) {
+  document.getElementById(`imgfile-${id}`).click();
+}
+
+function handleImageUpload(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('⚠️ La imagen no debe superar 2MB', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (p) {
+      p.image = e.target.result;
+      saveProducts();
+      renderProductsManager();
+      renderProducts();
+      showToast('🖼️ Foto actualizada', 'success');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveProduct(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  p.name     = document.getElementById(`pm-name-${id}`).value.trim() || p.name;
+  p.category = document.getElementById(`pm-cat-${id}`).value;
+  p.desc     = document.getElementById(`pm-desc-${id}`).value.trim();
+  p.emoji    = document.getElementById(`pm-emoji-${id}`).value.trim() || '📦';
+  p.priceUSD = parseFloat(document.getElementById(`pm-usd-${id}`).value) || 0;
+  p.priceCUP = parseInt(document.getElementById(`pm-cup-${id}`).value) || 0;
+  p.stock    = parseInt(document.getElementById(`pm-stock-${id}`).value) || 0;
+  saveProducts();
+  renderProducts();
+  renderProductsManager();
+  showToast(`✅ "${p.name}" guardado`, 'success');
+}
+
+function toggleProductActive(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  p.active = p.active === false ? true : false;
+  saveProducts();
+  renderProducts();
+  renderProductsManager();
+  showToast(`${p.active ? '👁 Producto visible' : '🚫 Producto oculto'}`, 'success');
+}
+
+function deleteProduct(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`¿Eliminar "${p.name}" permanentemente?`)) return;
+  const idx = PRODUCTS.indexOf(p);
+  PRODUCTS.splice(idx, 1);
+  saveProducts();
+  renderProducts();
+  renderProductsManager();
+  showToast('🗑️ Producto eliminado', 'success');
+}
+
+function addNewProduct() {
+  const newId = Date.now();
+  PRODUCTS.push({
+    id: newId,
+    emoji: '🆕',
+    category: 'Alimentos',
+    name: 'Nuevo Producto',
+    desc: 'Descripción del producto...',
+    priceUSD: 0,
+    priceCUP: 0,
+    stock: 0,
+    active: true,
+    image: '',
+  });
+  saveProducts();
+  renderProductsManager();
+  renderProducts();
+  // Scroll to the new card
+  setTimeout(() => {
+    const card = document.getElementById(`pmc-${newId}`);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+  showToast('➕ Nuevo producto creado. ¡Edita y guarda!', 'success');
+}
+
+// ══════════════════════════════════════
+// RENDER PRODUCTS
+// ══════════════════════════════════════
+function renderProducts() {
+  const grid = document.getElementById('productsGrid');
+  const visible = PRODUCTS.filter(p => p.active !== false && p.stock > 0);
+  if (visible.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">No hay productos disponibles en este momento.</div>';
+    return;
+  }
+  grid.innerHTML = visible.map(p => {
+    const imgContent = p.image
+      ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<span>${p.emoji || '📦'}</span>`;
+    const stockBadge = p.stock <= 3
+      ? `<div style="position:absolute;top:8px;right:8px;background:#D62828;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">¡Últimas ${p.stock}!</div>`
+      : '';
+    return `
+    <div class="product-card">
+      <div class="product-img" style="position:relative">${imgContent}${stockBadge}</div>
+      <div class="product-info">
+        <div class="product-tag">${p.category}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-prices">
+          <div class="price-tag">
+            <span class="flag">🇺🇸</span>
+            <span class="amount">$${p.priceUSD}</span>
+            <span class="currency">USD</span>
+          </div>
+          <div class="price-tag">
+            <span class="flag">🇨🇺</span>
+            <span class="amount">${p.priceCUP.toLocaleString()}</span>
+            <span class="currency">CUP</span>
+          </div>
+        </div>
+        <div class="qty-row">
+          <span class="qty-label">Cantidad:</span>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty(${p.id}, -1)">−</button>
+            <span class="qty-num" id="qty-${p.id}">1</span>
+            <button class="qty-btn" onclick="changeQty(${p.id}, 1)">+</button>
+          </div>
+        </div>
+        <button class="add-btn" id="addbtn-${p.id}" onclick="addToCart(${p.id})">
+          <i class="fas fa-cart-plus"></i> Agregar al Carrito
+        </button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+const productQtys = {};
+PRODUCTS.forEach(p => productQtys[p.id] = 1);
+
+function changeQty(id, delta) {
+  productQtys[id] = Math.max(1, (productQtys[id] || 1) + delta);
+  document.getElementById(`qty-${id}`).textContent = productQtys[id];
+}
+
+function addToCart(id) {
+  const product = PRODUCTS.find(p => p.id === id);
+  const qty = productQtys[id] || 1;
+  const existing = cart.find(i => i.id === id);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    cart.push({ ...product, qty });
+  }
+  updateCartCount();
+  const btn = document.getElementById(`addbtn-${id}`);
+  btn.classList.add('added');
+  btn.innerHTML = '<i class="fas fa-check"></i> ¡Agregado!';
+  setTimeout(() => {
+    btn.classList.remove('added');
+    btn.innerHTML = '<i class="fas fa-cart-plus"></i> Agregar al Carrito';
+  }, 1800);
+  showToast(`🛒 ${product.name} agregado al carrito`, 'success');
+}
+
+function updateCartCount() {
+  const total = cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cartCount').textContent = total;
+}
+
+// ══════════════════════════════════════
+// CART MODAL
+// ══════════════════════════════════════
+function openCart() {
+  orderStep = 'cart';
+  selectedPayer = null;
+  selectedPayment = null;
+  renderCartModal();
+  document.getElementById('cartModal').classList.add('active');
+}
+
+function closeCart() {
+  document.getElementById('cartModal').classList.remove('active');
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  updateCartCount();
+  renderCartModal();
+}
+
+function getCartTotal(currency) {
+  return cart.reduce((s, i) => s + (currency === 'usd' ? i.priceUSD : i.priceCUP) * i.qty, 0);
+}
+
+function renderCartModal() {
+  const body = document.getElementById('cartModalBody');
+  const header = document.querySelector('.modal-header h2');
+
+  if (orderStep === 'success') {
+    header.textContent = '✅ Pedido Confirmado';
+    body.innerHTML = renderSuccess();
+    return;
+  }
+
+  if (cart.length === 0 && orderStep === 'cart') {
+    header.textContent = '🛒 Tu Carrito';
+    body.innerHTML = `
+      <div class="cart-empty">
+        <div style="font-size:48px;margin-bottom:12px">🛒</div>
+        <p>Tu carrito está vacío.<br>¡Agrega productos para comenzar!</p>
+      </div>`;
+    return;
+  }
+
+  if (orderStep === 'cart') {
+    header.textContent = '🛒 Tu Carrito';
+    body.innerHTML = `
+      <div class="cart-items">
+        ${cart.map(item => `
+          <div class="cart-item">
+            <div class="cart-item-emoji">${item.emoji}</div>
+            <div class="cart-item-info">
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-qty">Cantidad: ${item.qty}</div>
+            </div>
+            <div class="cart-item-price">$${(item.priceUSD * item.qty).toFixed(2)}</div>
+            <button class="cart-item-remove" onclick="removeFromCart(${item.id})">✕</button>
+          </div>
+        `).join('')}
+      </div>
+      <div class="order-summary">
+        ${(() => {
+          const sub = getCartTotal('usd');
+          const {transportFee, processFee, total} = calcFees(sub);
+          const tLabel = config.feeTransportLabel || 'Transportación';
+          const pLabel = config.feeProcessLabel || 'Procesamiento';
+          const tType  = config.feeTransportType || 'none';
+          const pType  = config.feeProcessType   || 'none';
+          const tVal   = config.feeTransportVal  || 0;
+          const pVal   = config.feeProcessVal    || 0;
+          return `
+            <div class="summary-row"><span>Subtotal productos</span><span>$${sub.toFixed(2)} USD</span></div>
+            ${tType!=='none'?`<div class="summary-row" style="color:#D62828"><span>+ ${tLabel}${tType==='percent'?` (${tVal}%)`:'(fijo)'}</span><span>$${transportFee.toFixed(2)}</span></div>`:''}
+            ${pType!=='none'?`<div class="summary-row" style="color:#D62828"><span>+ ${pLabel}${pType==='percent'?` (${pVal}%)`:'(fijo)'}</span><span>$${processFee.toFixed(2)}</span></div>`:''}
+            <div class="summary-row total"><span>TOTAL USD</span><span>$${total.toFixed(2)}</span></div>
+            <div class="summary-row" style="font-size:13px;color:var(--muted)"><span>Equivalente en CUP</span><span>${fmtCUP(total)} CUP</span></div>
+          `;
+        })()}
+      </div>
+      <button class="submit-btn" onclick="goToForm()">
+        <i class="fas fa-arrow-right"></i> Continuar con el Pedido
+      </button>
+    `;
+    return;
+  }
+
+  if (orderStep === 'form') {
+    header.textContent = '📋 Datos del Pedido';
+    body.innerHTML = renderOrderForm();
+    return;
+  }
+
+  if (orderStep === 'payment') {
+    header.textContent = '💳 Realizar Pago';
+    body.innerHTML = renderPaymentStep();
+    return;
+  }
+}
+
+function goToForm() {
+  if (cart.length === 0) { showToast('⚠️ Agrega productos primero', 'error'); return; }
+  orderStep = 'form';
+  renderCartModal();
+}
+
+function renderOrderForm() {
+  return `
+    <!-- QUIÉN PAGA -->
+    <div class="form-section">
+      <div class="form-section-title">🌍 ¿Quién va a realizar el pago?</div>
+      <div class="payer-selector">
+        <div class="payer-option ${selectedPayer==='usa'?'selected':''}" onclick="selectPayer('usa')">
+          <span class="flag">🇺🇸</span>
+          <div class="label">Desde EE.UU.</div>
+          <div class="sublabel">PayPal · USDT BEP-20</div>
+        </div>
+        <div class="payer-option ${selectedPayer==='cuba'?'selected':''}" onclick="selectPayer('cuba')">
+          <span class="flag">📍</span>
+          <div class="label">Desde Las Tunas</div>
+          <div class="sublabel">Efectivo al entregar</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÉTODO DE PAGO -->
+    ${selectedPayer ? `
+    <div class="form-section">
+      <div class="form-section-title">💳 Método de Pago</div>
+      <div class="payment-methods">
+        ${selectedPayer === 'usa' ? `
+          <div class="payment-method ${selectedPayment==='paypal'?'selected':''}" onclick="selectPayment('paypal')">
+            <div class="icon">🅿️</div>
+            <div>
+              <div class="name">PayPal</div>
+              <div class="desc">Pago seguro en línea</div>
+            </div>
+          </div>
+          <div class="payment-method ${selectedPayment==='crypto'?'selected':''}" onclick="selectPayment('crypto')">
+            <div class="icon">₮</div>
+            <div>
+              <div class="name">USDT BEP-20</div>
+              <div class="desc">BSC · Binance Smart Chain</div>
+            </div>
+          </div>
+
+        ` : `
+
+
+          <div class="payment-method ${selectedPayment==='efectivo'?'selected':''}" onclick="selectPayment('efectivo')">
+            <div class="icon">💵</div>
+            <div>
+              <div class="name">Efectivo</div>
+              <div class="desc">Pago al entregar</div>
+            </div>
+          </div>
+          <div class="payment-method ${selectedPayment==='crypto'?'selected':''}" onclick="selectPayment('crypto')">
+            <div class="icon">₮</div>
+            <div>
+              <div class="name">USDT BEP-20</div>
+              <div class="desc">BSC · Binance Smart Chain</div>
+            </div>
+          </div>
+        `}
+      </div>
+    </div>` : ''}
+
+    <!-- DATOS DEL CLIENTE -->
+    <div class="form-section">
+      <div class="form-section-title">👤 Datos del Cliente</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Nombre completo *</label>
+          <input type="text" id="clientName" placeholder="Tu nombre completo" required>
+        </div>
+        <div class="field">
+          <label>Teléfono / WhatsApp</label>
+          <input type="tel" id="clientPhone" placeholder="+1 000 000 0000">
+        </div>
+        <div class="field">
+          <label>Email *</label>
+          <input type="email" id="clientEmail" placeholder="tu@email.com" required>
+        </div>
+        <div class="field">
+          <label>Ciudad / Municipio</label>
+          <input type="text" id="clientCity" placeholder="Las Tunas, Majibacoa, Puerto Padre...">
+        </div>
+      </div>
+    </div>
+
+    <!-- DATOS DEL DESTINATARIO -->
+    <div class="form-section">
+      <div class="form-section-title">📬 Destinatario en Las Tunas</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Nombre del destinatario *</label>
+          <input type="text" id="recipientName" placeholder="Nombre de quien recibe">
+        </div>
+        <div class="field">
+          <label>Teléfono en Cuba</label>
+          <input type="tel" id="recipientPhone" placeholder="+53 5000 0000">
+        </div>
+      </div>
+      <div class="form-grid full" style="margin-top:10px">
+        <div class="field">
+          <label>Dirección de entrega completa *</label>
+          <textarea id="recipientAddress" placeholder="Calle, número, reparto, municipio de Las Tunas..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTAS -->
+    <div class="form-section">
+      <div class="form-section-title">📝 Notas adicionales</div>
+      <div class="field">
+        <textarea id="orderNotes" placeholder="Tallas, preferencias, instrucciones especiales..."></textarea>
+      </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="order-summary">
+      ${(() => {
+        const sub = getCartTotal('usd');
+        const {transportFee, processFee, total} = calcFees(sub);
+        const tLabel = config.feeTransportLabel || 'Transportación';
+        const pLabel = config.feeProcessLabel   || 'Procesamiento';
+        const tType  = config.feeTransportType  || 'none';
+        const pType  = config.feeProcessType    || 'none';
+        const tVal   = config.feeTransportVal   || 0;
+        const pVal   = config.feeProcessVal     || 0;
+        return `
+          <div class="summary-row"><span>Productos (${cart.reduce((s,i)=>s+i.qty,0)} items)</span><span>$${sub.toFixed(2)} USD</span></div>
+          ${tType!=='none'?`<div class="summary-row" style="color:#D62828"><span>+ ${tLabel}${tType==='percent'?` (${tVal}%)`:'(fijo)'}</span><span>$${transportFee.toFixed(2)}</span></div>`:''}
+          ${pType!=='none'?`<div class="summary-row" style="color:#D62828"><span>+ ${pLabel}${pType==='percent'?` (${pVal}%)`:'(fijo)'}</span><span>$${processFee.toFixed(2)}</span></div>`:''}
+          <div class="summary-row total"><span>TOTAL A PAGAR</span><span>$${total.toFixed(2)} USD</span></div>
+          <div class="summary-row" style="font-size:13px;color:var(--muted)"><span>Equivalente CUP</span><span>${fmtCUP(total)} CUP</span></div>
+        `;
+      })()}
+    </div>
+
+    <div style="display:flex;gap:12px">
+      <button class="submit-btn" style="background:var(--mid);flex:0 0 auto;width:auto;padding:16px 20px" onclick="goBack()">
+        ← Volver
+      </button>
+      <button class="submit-btn" onclick="submitOrder()">
+        <i class="fas fa-paper-plane"></i> Confirmar Pedido
+      </button>
+    </div>
+  `;
+}
+
+function selectPayer(p) {
+  selectedPayer = p;
+  selectedPayment = null;
+  renderCartModal();
+}
+
+function selectPayment(p) {
+  selectedPayment = p;
+  renderCartModal();
+}
+
+function goBack() {
+  if (orderStep === 'form') orderStep = 'cart';
+  else if (orderStep === 'payment') orderStep = 'form';
+  renderCartModal();
+}
+
+function submitOrder() {
+  const name = document.getElementById('clientName')?.value?.trim();
+  const email = document.getElementById('clientEmail')?.value?.trim();
+  const recipientName = document.getElementById('recipientName')?.value?.trim();
+  const recipientAddress = document.getElementById('recipientAddress')?.value?.trim();
+
+  if (!name || !email) { showToast('⚠️ Completa tu nombre y email', 'error'); return; }
+  if (!recipientName || !recipientAddress) { showToast('⚠️ Completa los datos del destinatario', 'error'); return; }
+  if (!selectedPayer) { showToast('⚠️ Selecciona quién va a pagar', 'error'); return; }
+  if (!selectedPayment) { showToast('⚠️ Selecciona un método de pago', 'error'); return; }
+
+  // Collect order data
+  const sub = getCartTotal('usd');
+  const {transportFee, processFee, total} = calcFees(sub);
+  window.currentOrder = {
+    id: 'ORD-' + Date.now(),
+    clientName: name,
+    clientEmail: email,
+    clientPhone: document.getElementById('clientPhone')?.value || '',
+    clientCity: document.getElementById('clientCity')?.value || '',
+    recipientName,
+    recipientPhone: document.getElementById('recipientPhone')?.value || '',
+    recipientAddress,
+    notes: document.getElementById('orderNotes')?.value || '',
+    payer: selectedPayer,
+    payment: selectedPayment,
+    items: cart.map(i => `${i.name} x${i.qty} = $${(i.priceUSD*i.qty).toFixed(2)}`).join('\n'),
+    subtotalUSD: sub.toFixed(2),
+    transportFee: transportFee.toFixed(2),
+    processFee: processFee.toFixed(2),
+    totalUSD: total.toFixed(2),
+    totalCUP: fmtCUP(total),
+    totalUSDT: fmtUSDT(total),
+  };
+
+  orderStep = 'payment';
+  renderCartModal();
+}
+
+function renderPaymentStep() {
+  const order = window.currentOrder;
+  const payment = order.payment;
+
+  let paymentHTML = '';
+
+  if (payment === 'paypal') {
+    const link = config.paypalLink || '#';
+    const amount = order.totalUSD;
+    paymentHTML = `
+      <div class="paypal-info">
+        <div style="font-weight:600;margin-bottom:8px;color:#003087">🅿️ Pago por PayPal</div>
+        <p style="font-size:14px;color:#555">Haz clic en el botón para pagar <strong>$${amount} USD</strong> de forma segura.</p>
+        <p style="font-size:12px;color:#888;margin-top:6px">En el concepto del pago escribe: <strong>${order.id}</strong></p>
+        <a class="paypal-link" href="${link ? link + '/' + amount : '#'}" target="_blank">
+          <i class="fab fa-paypal"></i> Pagar $${amount} USD con PayPal
+        </a>
+        ${config.paypalEmail ? `<p style="font-size:12px;color:#888;margin-top:8px">También puedes enviar directamente a: <strong>${config.paypalEmail}</strong></p>` : ''}
+      </div>
+    `;
+  } else if (payment === 'crypto') {
+    const addr = config.usdtAddress;
+    paymentHTML = `
+      <div class="crypto-info">
+        <div style="font-weight:600;margin-bottom:10px;color:#26A17B;font-size:16px;">₮ Pago con USDT — Red BSC (BEP-20)</div>
+        <p style="font-size:14px;color:#555;margin-bottom:4px;">Envía exactamente <strong>$${order.totalUSD} USDT</strong> a esta dirección en la red <strong>Binance Smart Chain (BEP-20)</strong>:</p>
+        <div class="crypto-address">
+          <span style="word-break:break-all">${addr || 'Dirección no configurada. Contacta al administrador.'}</span>
+          ${addr ? `<button class="copy-btn" onclick="copyAddr('${addr}')">Copiar</button>` : ''}
+        </div>
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px;">
+          ⚠️ <strong>Importante:</strong> Usa <u>solo la red BSC / BEP-20</u>. Enviar por otra red resultará en pérdida de fondos.
+        </div>
+        <p style="font-size:12px;color:#888;margin-top:10px;">Referencia del pedido: <strong>${order.id}</strong></p>
+      </div>
+    `;
+
+
+  } else if (payment === 'efectivo') {
+    paymentHTML = `
+      <div class="transfer-info">
+        <div style="font-weight:600;margin-bottom:8px">💵 Pago en Efectivo</div>
+        <p style="font-size:14px;">El pago se realizará al momento de la entrega.</p>
+        <p style="font-size:13px;color:#555;margin-top:8px">Monto: <strong>${order.totalCUP} CUP</strong></p>
+        <p style="font-size:13px;color:#555">Tu número de pedido: <strong>${order.id}</strong></p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="form-section">
+      <div class="form-section-title">📋 Resumen del Pedido</div>
+      <div class="order-summary">
+        <div class="summary-row"><span>N° Pedido</span><span style="font-family:monospace;font-size:13px">${order.id}</span></div>
+        <div class="summary-row"><span>Cliente</span><span>${order.clientName}</span></div>
+        <div class="summary-row"><span>Destinatario</span><span>${order.recipientName}</span></div>
+        <div class="summary-row"><span>Paga desde</span><span>${order.payer === 'usa' ? '🇺🇸 EE.UU.' : '📍 Las Tunas'}</span></div>
+        <div class="summary-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px"><span>Subtotal productos</span><span>$${order.subtotalUSD} USD</span></div>
+        ${parseFloat(order.transportFee)>0?`<div class="summary-row" style="color:#D62828"><span>+ ${config.feeTransportLabel||'Transportación'}</span><span>$${order.transportFee}</span></div>`:''}
+        ${parseFloat(order.processFee)>0?`<div class="summary-row" style="color:#D62828"><span>+ ${config.feeProcessLabel||'Procesamiento'}</span><span>$${order.processFee}</span></div>`:''}
+        <div class="summary-row total"><span>TOTAL USD</span><span>$${order.totalUSD}</span></div>
+        <div class="summary-row" style="font-size:13px;color:var(--muted)"><span>Equivalente en CUP</span><span>${order.totalCUP} CUP</span></div>
+        <div class="summary-row" style="font-size:13px;color:#26A17B"><span>Equivalente en USDT</span><span>${order.totalUSDT} USDT</span></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">💳 Instrucciones de Pago</div>
+      ${paymentHTML}
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:20px">
+      <button class="submit-btn" style="background:var(--mid);flex:0 0 auto;width:auto;padding:16px 20px" onclick="goBack()">
+        ← Volver
+      </button>
+      <button class="submit-btn" id="confirmPayBtn" onclick="confirmPayment()">
+        <i class="fas fa-check-circle"></i> He Realizado el Pago
+      </button>
+    </div>
+  `;
+}
+
+function selectCryptoUI(coin) {
+  selectedCrypto = coin;
+  document.querySelectorAll('.crypto-coin').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.crypto-block').forEach(el => el.style.display = 'none');
+  const sel = document.querySelector(`.crypto-coin.${coin}`);
+  if (sel) sel.classList.add('selected');
+  document.querySelectorAll(`[id^="crypto-block-"]`).forEach(el => el.style.display = 'none');
+  const block = document.getElementById(`crypto-block-${coin}`);
+  if (block) block.style.display = 'block';
+}
+
+function copyAddr(addr) {
+  navigator.clipboard.writeText(addr).then(() => showToast('📋 Dirección copiada', 'success'));
+}
+
+async function confirmPayment() {
+  const btn = document.getElementById('confirmPayBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando notificación...';
+
+  await sendEmailNotification(window.currentOrder);
+
+  cart = [];
+  updateCartCount();
+  orderStep = 'success';
+  renderCartModal();
+}
+
+function renderSuccess() {
+  const order = window.currentOrder;
+  return `
+    <div class="success-screen">
+      <div class="check">✅</div>
+      <h3>¡Pedido Confirmado!</h3>
+      <p>Tu pedido ha sido registrado. Recibirás confirmación por email en breve. Nos pondremos en contacto contigo para coordinar la entrega en Las Tunas.</p>
+      <div class="success-details">
+        <strong>N° Pedido:</strong> ${order.id}<br>
+        <strong>Cliente:</strong> ${order.clientName}<br>
+        <strong>Destinatario:</strong> ${order.recipientName}<br>
+        <strong>Dirección:</strong> ${order.recipientAddress}<br>
+        <strong>Total:</strong> $${order.totalUSD} USD<br>
+        <strong>Pago:</strong> ${getPaymentLabel(order.payment)}
+      </div>
+      <button class="submit-btn" onclick="closeCart()">
+        <i class="fas fa-home"></i> Volver a la Tienda
+      </button>
+    </div>
+  `;
+}
+
+function getPaymentLabel(p) {
+  const labels = {
+    paypal: 'PayPal',
+    crypto: 'Criptomonedas',
+    transfer: 'Transferencia Bancaria',
+    transfer_cuba: 'Transferencia Cuba',
+    efectivo: 'Efectivo (al entregar)',
+  };
+  return labels[p] || p;
+}
+
+// ══════════════════════════════════════
+// EMAIL NOTIFICATIONS via EmailJS
+// ══════════════════════════════════════
+async function sendEmailNotification(order) {
+  if (!config.emailjsService || !config.emailjsTemplate || !config.emailjsPublic) {
+    console.warn('EmailJS not configured');
+    showToast('⚠️ Configura EmailJS para recibir notificaciones', 'error');
+    return;
+  }
+
+  try {
+    emailjs.init(config.emailjsPublic);
+
+    const templateParams = {
+      order_id: order.id,
+      customer_name: order.clientName,
+      customer_email: order.clientEmail,
+      customer_phone: order.clientPhone,
+      recipient_name: order.recipientName,
+      recipient_phone: order.recipientPhone,
+      recipient_address: order.recipientAddress,
+      items: order.items,
+      total_usd: '$' + order.totalUSD,
+      total_cup: order.totalCUP + ' CUP',
+      payment_method: getPaymentLabel(order.payment),
+      payer_location: order.payer === 'usa' ? '🇺🇸 Estados Unidos' : '📍 Las Tunas',
+      notes: order.notes || 'Ninguna',
+      admin_email: config.adminEmail1,
+      admin_email2: config.adminEmail2,
+    };
+
+    // Send to admin 1
+    if (config.adminEmail1) {
+      await emailjs.send(config.emailjsService, config.emailjsTemplate, {
+        ...templateParams,
+        to_email: config.adminEmail1,
+        to_name: 'Administrador',
+      });
+    }
+
+    // Send to admin 2
+    if (config.adminEmail2) {
+      await emailjs.send(config.emailjsService, config.emailjsTemplate, {
+        ...templateParams,
+        to_email: config.adminEmail2,
+        to_name: 'Administrador 2',
+      });
+    }
+
+    // Send confirmation to customer
+    if (order.clientEmail) {
+      await emailjs.send(config.emailjsService, config.emailjsTemplate, {
+        ...templateParams,
+        to_email: order.clientEmail,
+        to_name: order.clientName,
+      });
+    }
+
+    showToast('📧 Notificaciones enviadas por email', 'success');
+  } catch (err) {
+    console.error('Email error:', err);
+    showToast('⚠️ Pedido guardado pero hubo un error enviando el email', 'error');
+  }
+}
+
+// ══════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast ${type} show`;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+function toggleAdmin() {
+  const panel = document.getElementById('adminPanel');
+  const arrow = document.getElementById('adminArrow');
+  panel.classList.toggle('open');
+  arrow.textContent = panel.classList.contains('open') ? '▲' : '▼';
+}
+
+// Close modal on overlay click
+document.getElementById('cartModal').addEventListener('click', function(e) {
+  if (e.target === this) closeCart();
+});
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+renderProducts();
+populateAdminFields();
+</script>
+</body>
+</html>
