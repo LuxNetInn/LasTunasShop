@@ -1040,13 +1040,30 @@ main {
           <label>Email Admin 2</label>
           <input type="email" id="adminEmail2" placeholder="coadmin@ejemplo.com">
         </div>
-        <div class="admin-field">
-          <label>Link PayPal.Me</label>
-          <input type="text" id="paypalLink" placeholder="https://paypal.me/tunombre">
-        </div>
-        <div class="admin-field">
-          <label>Email PayPal</label>
-          <input type="email" id="paypalEmail" placeholder="pagos@ejemplo.com">
+        <div class="admin-field" style="grid-column:1/-1">
+          <label style="color:#F4A60D;font-size:12px;">🅿️ CONFIGURACIÓN PAYPAL</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;">
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Link PayPal.Me (principal)</label>
+              <input type="text" id="paypalLink" placeholder="https://paypal.me/tunombre" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;">
+              <span style="font-size:10px;color:#666;">El monto del pedido se añade automáticamente</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Email PayPal (para envíos directos)</label>
+              <input type="email" id="paypalEmail" placeholder="pagos@ejemplo.com" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;">
+              <span style="font-size:10px;color:#666;">Alternativa si el cliente no tiene link</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Link PayPal alternativo 2</label>
+              <input type="text" id="paypalLink2" placeholder="https://paypal.me/otrousuario" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;">
+              <span style="font-size:10px;color:#666;">Opcional — segundo link de respaldo</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Nota para el cliente (PayPal)</label>
+              <input type="text" id="paypalNote" placeholder="Ej: Incluye tu nombre en el concepto" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;">
+              <span style="font-size:10px;color:#666;">Instrucción adicional visible al pagar</span>
+            </div>
+          </div>
         </div>
         <div class="admin-field">
           <label>Dirección USDT (BSC BEP-20)</label>
@@ -1220,7 +1237,7 @@ function loadConfig() {
   const saved = localStorage.getItem('cubashop_config');
   const defaults = {
     adminEmail1: '', adminEmail2: '',
-    paypalLink: '', paypalEmail: '',
+    paypalLink: '', paypalEmail: '', paypalLink2: '', paypalNote: '',
     usdtAddress: '',
     emailjsService: '', emailjsTemplate: '', emailjsPublic: '',
     rateUsdCup: 300,
@@ -1240,6 +1257,8 @@ function saveAdminConfig() {
   config.adminEmail2 = document.getElementById('adminEmail2').value;
   config.paypalLink = document.getElementById('paypalLink').value;
   config.paypalEmail = document.getElementById('paypalEmail').value;
+  config.paypalLink2 = document.getElementById('paypalLink2').value;
+  config.paypalNote = document.getElementById('paypalNote').value;
   config.usdtAddress = document.getElementById('usdtAddress').value;
 
   config.emailjsService = document.getElementById('emailjsService').value;
@@ -1254,6 +1273,8 @@ function populateAdminFields() {
   document.getElementById('adminEmail2').value = config.adminEmail2 || '';
   document.getElementById('paypalLink').value = config.paypalLink || '';
   document.getElementById('paypalEmail').value = config.paypalEmail || '';
+  document.getElementById('paypalLink2').value = config.paypalLink2 || '';
+  document.getElementById('paypalNote').value = config.paypalNote || '';
   document.getElementById('usdtAddress').value = config.usdtAddress || '';
   document.getElementById('emailjsService').value = config.emailjsService || '';
   document.getElementById('emailjsTemplate').value = config.emailjsTemplate || '';
@@ -1918,17 +1939,39 @@ function renderPaymentStep() {
   let paymentHTML = '';
 
   if (payment === 'paypal') {
-    const link = config.paypalLink || '#';
+    const link = config.paypalLink ? config.paypalLink.trim().replace(/\/$/, '') : '';
+    const link2 = config.paypalLink2 ? config.paypalLink2.trim().replace(/\/$/, '') : '';
     const amount = order.totalUSD;
+    const note = config.paypalNote || '';
+    const paypalLinkWithAmount = link ? `${link}/${amount}` : '';
+    const paypalLink2WithAmount = link2 ? `${link2}/${amount}` : '';
     paymentHTML = `
       <div class="paypal-info">
-        <div style="font-weight:600;margin-bottom:8px;color:#003087">🅿️ Pago por PayPal</div>
-        <p style="font-size:14px;color:#555">Haz clic en el botón para pagar <strong>$${amount} USD</strong> de forma segura.</p>
-        <p style="font-size:12px;color:#888;margin-top:6px">En el concepto del pago escribe: <strong>${order.id}</strong></p>
-        <a class="paypal-link" href="${link ? link + '/' + amount : '#'}" target="_blank">
+        <div style="font-weight:700;margin-bottom:10px;color:#003087;font-size:16px;">🅿️ Pago con PayPal</div>
+        <div style="background:#fff;border:1px solid #cce0ff;border-radius:8px;padding:12px;margin-bottom:12px;">
+          <div style="font-size:13px;color:#444;margin-bottom:4px;">💰 Monto a pagar:</div>
+          <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#003087;">$${amount} USD</div>
+        </div>
+        <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;">
+          📋 <strong>Referencia del pedido:</strong> <span style="font-family:monospace;font-weight:700;color:#003087;">${order.id}</span>
+          <button onclick="navigator.clipboard.writeText('${order.id}').then(()=>showToast('📋 Referencia copiada','success'))" style="background:#F4A60D;border:none;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:11px;font-weight:700;margin-left:8px;">Copiar</button>
+          <div style="color:#888;font-size:11px;margin-top:4px;">Escribe esta referencia en el concepto/nota del pago PayPal</div>
+        </div>
+        ${note ? `<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:#2e7d32;">ℹ️ ${note}</div>` : ''}
+        ${paypalLinkWithAmount ? `
+        <a class="paypal-link" href="${paypalLinkWithAmount}" target="_blank" rel="noopener">
           <i class="fab fa-paypal"></i> Pagar $${amount} USD con PayPal
-        </a>
-        ${config.paypalEmail ? `<p style="font-size:12px;color:#888;margin-top:8px">También puedes enviar directamente a: <strong>${config.paypalEmail}</strong></p>` : ''}
+        </a>` : `<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px;font-size:13px;color:#856404;">⚠️ Link de PayPal no configurado. Contacta al administrador.</div>`}
+        ${paypalLink2WithAmount ? `
+        <a class="paypal-link" href="${paypalLink2WithAmount}" target="_blank" rel="noopener" style="margin-top:8px;background:#0070ba;">
+          <i class="fab fa-paypal"></i> Link alternativo PayPal
+        </a>` : ''}
+        ${config.paypalEmail ? `
+        <div style="margin-top:12px;padding:10px 12px;background:#f0f4ff;border-radius:8px;font-size:13px;">
+          <div style="color:#555;margin-bottom:4px;">📧 O envía directamente a este email de PayPal:</div>
+          <div style="font-weight:700;color:#003087;">${config.paypalEmail}</div>
+          <button onclick="navigator.clipboard.writeText('${config.paypalEmail}').then(()=>showToast('📋 Email copiado','success'))" style="background:#003087;color:#fff;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:700;margin-top:6px;">Copiar email</button>
+        </div>` : ''}
       </div>
     `;
   } else if (payment === 'crypto') {
