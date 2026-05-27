@@ -1273,18 +1273,7 @@ main {
           <input type="text" id="usdtAddress" placeholder="0x...">
         </div>
 
-        <div class="admin-field">
-          <label>API Key EmailJS (Service ID)</label>
-          <input type="text" id="emailjsService" placeholder="service_xxxxxxx">
-        </div>
-        <div class="admin-field">
-          <label>EmailJS Template ID</label>
-          <input type="text" id="emailjsTemplate" placeholder="template_xxxxxxx">
-        </div>
-        <div class="admin-field">
-          <label>EmailJS Public Key</label>
-          <input type="text" id="emailjsPublic" placeholder="xxxxxxxxxxxxxxxxxxxx">
-        </div>
+
       </div>
       <button class="admin-save" onclick="saveAdminConfig()">💾 Guardar Configuración</button>
       <div style="margin-top:20px;padding:16px;background:#222;border-radius:10px;border:1px solid #333;">
@@ -1305,13 +1294,7 @@ main {
         </div>
         <button class="admin-save" onclick="changeAdminCredentials()" style="margin-top:12px;background:#003F87;">🔑 Cambiar Credenciales</button>
       </div>
-      <div style="margin-top:16px; padding:12px; background:#2a2a2a; border-radius:8px; font-size:12px; color:#888; line-height:1.6;">
-        <strong style="color:#ccc;">📧 Para notificaciones de email:</strong><br>
-        1. Crea cuenta gratis en <a href="https://www.emailjs.com" target="_blank" style="color:var(--gold)">emailjs.com</a><br>
-        2. Crea un servicio de email (Gmail recomendado)<br>
-        3. Crea una plantilla con variables: <code style="color:#aaa">{{order_id}}, {{customer_name}}, {{items}}, {{total}}, {{payment}}, {{payer_location}}</code><br>
-        4. Ingresa tus credenciales arriba
-      </div>
+
     </div>
 
     <!-- TAB: TASAS Y FEES -->
@@ -1463,7 +1446,6 @@ main {
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 
 // ══════════════════════════════════════
@@ -1505,7 +1487,6 @@ function loadConfig() {
     adminEmail1: '', adminEmail2: '',
     paypalLink: '', paypalEmail: '', paypalLink2: '', paypalNote: '',
     usdtAddress: '',
-    emailjsService: '', emailjsTemplate: '', emailjsPublic: '',
     rateUsdCup: 300,
     rateUsdUsdt: 1.00,
     feeTransportType: 'fixed',
@@ -1527,9 +1508,7 @@ function saveAdminConfig() {
   config.paypalNote = document.getElementById('paypalNote').value;
   config.usdtAddress = document.getElementById('usdtAddress').value;
 
-  config.emailjsService = document.getElementById('emailjsService').value;
-  config.emailjsTemplate = document.getElementById('emailjsTemplate').value;
-  config.emailjsPublic = document.getElementById('emailjsPublic').value;
+
   localStorage.setItem('cubashop_config', JSON.stringify(config));
   showToast('✅ Configuración guardada correctamente', 'success');
 }
@@ -1542,9 +1521,7 @@ function populateAdminFields() {
   document.getElementById('paypalLink2').value = config.paypalLink2 || '';
   document.getElementById('paypalNote').value = config.paypalNote || '';
   document.getElementById('usdtAddress').value = config.usdtAddress || '';
-  document.getElementById('emailjsService').value = config.emailjsService || '';
-  document.getElementById('emailjsTemplate').value = config.emailjsTemplate || '';
-  document.getElementById('emailjsPublic').value = config.emailjsPublic || '';
+
 }
 
 function populateRatesFields() {
@@ -2323,7 +2300,6 @@ async function confirmPayment() {
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando notificación...';
 
-  await sendEmailNotification(window.currentOrder);
 
   cart = [];
   updateCartCount();
@@ -2364,70 +2340,7 @@ function getPaymentLabel(p) {
   return labels[p] || p;
 }
 
-// ══════════════════════════════════════
-// EMAIL NOTIFICATIONS via EmailJS
-// ══════════════════════════════════════
-async function sendEmailNotification(order) {
-  if (!config.emailjsService || !config.emailjsTemplate || !config.emailjsPublic) {
-    console.warn('EmailJS not configured');
-    showToast('⚠️ Configura EmailJS para recibir notificaciones', 'error');
-    return;
-  }
 
-  try {
-    emailjs.init(config.emailjsPublic);
-
-    const templateParams = {
-      order_id: order.id,
-      customer_name: order.clientName,
-      customer_email: order.clientEmail,
-      customer_phone: order.clientPhone,
-      recipient_name: order.recipientName,
-      recipient_phone: order.recipientPhone,
-      recipient_address: order.recipientAddress,
-      items: order.items,
-      total_usd: '$' + order.totalUSD,
-      total_cup: order.totalCUP + ' CUP',
-      payment_method: getPaymentLabel(order.payment),
-      payer_location: order.payer === 'usa' ? '🇺🇸 Estados Unidos' : '📍 Las Tunas',
-      notes: order.notes || 'Ninguna',
-      admin_email: config.adminEmail1,
-      admin_email2: config.adminEmail2,
-    };
-
-    // Send to admin 1
-    if (config.adminEmail1) {
-      await emailjs.send(config.emailjsService, config.emailjsTemplate, {
-        ...templateParams,
-        to_email: config.adminEmail1,
-        to_name: 'Administrador',
-      });
-    }
-
-    // Send to admin 2
-    if (config.adminEmail2) {
-      await emailjs.send(config.emailjsService, config.emailjsTemplate, {
-        ...templateParams,
-        to_email: config.adminEmail2,
-        to_name: 'Administrador 2',
-      });
-    }
-
-    // Send confirmation to customer
-    if (order.clientEmail) {
-      await emailjs.send(config.emailjsService, config.emailjsTemplate, {
-        ...templateParams,
-        to_email: order.clientEmail,
-        to_name: order.clientName,
-      });
-    }
-
-    showToast('📧 Notificaciones enviadas por email', 'success');
-  } catch (err) {
-    console.error('Email error:', err);
-    showToast('⚠️ Pedido guardado pero hubo un error enviando el email', 'error');
-  }
-}
 
 // ══════════════════════════════════════
 // UI HELPERS
