@@ -809,6 +809,85 @@ main {
 }
 .admin-logout-btn:hover { border-color: var(--cuban-red); color: var(--cuban-red); }
 
+/* ══ USER MANAGER ══ */
+.user-card {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color .2s;
+}
+.user-card:hover { border-color: #555; }
+.user-card-info { flex: 1; }
+.user-card-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+.user-role-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.user-role-badge.superadmin { background: #2d1f00; color: var(--gold); }
+.user-role-badge.editor { background: #1a2d3d; color: #60a5fa; }
+.user-card-actions { display: flex; gap: 8px; }
+.user-action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all .15s;
+}
+.user-action-btn.edit { background: #1a2a3d; color: #60a5fa; }
+.user-action-btn.edit:hover { background: #1e3a5f; }
+.user-action-btn.delete { background: #3d1a1a; color: #f87171; }
+.user-action-btn.delete:hover { background: #5a2020; }
+.add-user-form {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+}
+.add-user-form h4 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.role-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.role-option {
+  flex: 1;
+  border: 1.5px solid #444;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+}
+.role-option:hover { border-color: #666; }
+.role-option.selected.superadmin { border-color: var(--gold); background: #2d1f00; }
+.role-option.selected.editor { border-color: #60a5fa; background: #1a2d3d; }
+.role-option .role-icon { font-size: 22px; margin-bottom: 4px; }
+.role-option .role-name { font-size: 12px; font-weight: 700; color: #ccc; }
+.role-option .role-desc { font-size: 10px; color: #666; margin-top: 2px; }
+
 /* Admin config panel */
 .admin-bar {
   background: var(--mid);
@@ -1145,10 +1224,11 @@ main {
   <div class="admin-panel" id="adminPanel">
 
     <!-- TABS -->
-    <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchAdminTab('config', this)">⚙️ Configuración</button>
-      <button class="admin-tab" onclick="switchAdminTab('rates', this)">💱 Tasas y Fees</button>
-      <button class="admin-tab" onclick="switchAdminTab('products', this)">📦 Gestionar Productos</button>
+    <div class="admin-tabs" id="adminTabs">
+      <button class="admin-tab active" id="tab-btn-config" onclick="switchAdminTab('config', this)">⚙️ Configuración</button>
+      <button class="admin-tab" id="tab-btn-rates" onclick="switchAdminTab('rates', this)">💱 Tasas y Fees</button>
+      <button class="admin-tab" id="tab-btn-products" onclick="switchAdminTab('products', this)">📦 Gestionar Productos</button>
+      <button class="admin-tab superadmin-only" id="tab-btn-users" onclick="switchAdminTab('users', this)" style="display:none;">👥 Usuarios</button>
     </div>
 
     <!-- TAB: CONFIGURACIÓN -->
@@ -1335,6 +1415,51 @@ main {
       <div class="products-manager" id="productsManager"></div>
     </div>
 
+    <!-- TAB: USUARIOS (solo superadmin) -->
+    <div class="admin-section superadmin-only" id="tab-users" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div style="color:#ccc;font-size:13px;">Gestiona los usuarios con acceso al Panel de Administración.</div>
+        <button class="add-product-btn" onclick="toggleAddUserForm()" style="background:linear-gradient(135deg,#003F87,#1a7f4b);">
+          <i class="fas fa-user-plus"></i> Nuevo Usuario
+        </button>
+      </div>
+      <div class="add-user-form" id="addUserForm" style="display:none;">
+        <h4>➕ Crear nuevo usuario</h4>
+        <div class="role-selector">
+          <div class="role-option superadmin" id="roleOptSuperadmin" onclick="selectNewUserRole('superadmin')">
+            <div class="role-icon">👑</div>
+            <div class="role-name">Super Admin</div>
+            <div class="role-desc">Acceso total al panel</div>
+          </div>
+          <div class="role-option editor selected" id="roleOptEditor" onclick="selectNewUserRole('editor')">
+            <div class="role-icon">✏️</div>
+            <div class="role-name">Editor</div>
+            <div class="role-desc">Solo gestión de productos</div>
+          </div>
+        </div>
+        <input type="hidden" id="newUserRole" value="editor">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Nombre visible</label>
+            <input type="text" id="newUserName" placeholder="Ej: María García" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;" autocomplete="off">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Usuario (login)</label>
+            <input type="text" id="newUserUsername" placeholder="Ej: maria" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;" autocomplete="off">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Contraseña</label>
+            <input type="password" id="newUserPassword" placeholder="••••••••" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;" autocomplete="new-password">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="admin-save" onclick="createUser()" style="background:linear-gradient(135deg,#003F87,#1a7f4b);">✅ Crear Usuario</button>
+          <button class="admin-save" onclick="toggleAddUserForm()" style="background:#444;">Cancelar</button>
+        </div>
+      </div>
+      <div id="usersList" style="display:flex;flex-direction:column;gap:10px;margin-top:16px;"></div>
+    </div>
+
   </div>
 </div>
 
@@ -1511,6 +1636,7 @@ function fmtUSDT(usd) {
 function switchAdminTab(tab, btn) {
   document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  if (tab === 'users') { renderUsersList(); }
   document.getElementById('tab-' + tab).classList.add('active');
   btn.classList.add('active');
   if (tab === 'products') renderProductsManager();
@@ -2314,129 +2440,191 @@ function showToast(msg, type = 'success') {
 }
 
 // ══════════════════════════════════════
-// ADMIN AUTH
+// SISTEMA MULTI-USUARIO CON ROLES
 // ══════════════════════════════════════
-// Credenciales hasheadas con SHA-256
-// Usuario: admin | Contraseña: LasT2024!
-const ADMIN_USER_HASH = 'b94b1c0a7e3e7b8e6a2f9d1c4b5e8f3a2d6c9e1b4f7a0d3e6b9c2f5a8d1e4b7'; // placeholder - se genera en runtime
-const ADMIN_PASS_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // placeholder
-
 async function sha256(message) {
   const msgBuffer = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
-
-function adminIsLoggedIn() {
-  return sessionStorage.getItem('adminAuth') === 'true';
+async function initDefaultUsers() {
+  if (localStorage.getItem('cubashop_users')) return;
+  const userHash = await sha256('admin');
+  const passHash = await sha256('LasT2024!');
+  localStorage.setItem('cubashop_users', JSON.stringify([
+    { id: 1, name: 'Administrador', username: 'admin', userHash, passHash, role: 'superadmin', createdAt: new Date().toISOString() }
+  ]));
 }
-
+function getUsers() { return JSON.parse(localStorage.getItem('cubashop_users') || '[]'); }
+function saveUsers(users) { localStorage.setItem('cubashop_users', JSON.stringify(users)); }
+function getCurrentUser() {
+  const data = sessionStorage.getItem('adminSession');
+  return data ? JSON.parse(data) : null;
+}
+function adminIsLoggedIn() { return getCurrentUser() !== null; }
+function isSuperAdmin() { const u = getCurrentUser(); return u && u.role === 'superadmin'; }
+function applyRoleUI() {
+  const user = getCurrentUser();
+  if (!user) return;
+  document.querySelectorAll('.superadmin-only').forEach(el => {
+    el.style.display = user.role === 'superadmin' ? '' : 'none';
+  });
+  if (user.role === 'editor') {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+    const pt = document.getElementById('tab-btn-products');
+    const ps = document.getElementById('tab-products');
+    if (pt) pt.classList.add('active');
+    if (ps) ps.classList.add('active');
+    ['tab-btn-config','tab-btn-rates'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display='none'; });
+  } else {
+    document.querySelectorAll('.admin-tab').forEach(t => { if(!t.classList.contains('superadmin-only')) t.style.display=''; });
+  }
+  const lb = document.getElementById('adminLogoutBtn');
+  if (lb) { lb.textContent = (user.role==='superadmin'?'👑 ':'✏️ ')+user.name+' — Cerrar sesión'; lb.style.display='inline-block'; }
+}
 async function adminDoLogin() {
-  const user = document.getElementById('adminLoginUser').value.trim();
+  const username = document.getElementById('adminLoginUser').value.trim().toLowerCase();
   const pass = document.getElementById('adminLoginPass').value;
   const errEl = document.getElementById('adminLoginError');
-
-  if (!user || !pass) {
-    errEl.textContent = '⚠️ Completa usuario y contraseña';
-    errEl.classList.add('show');
-    return;
-  }
-
-  const userHash = await sha256(user);
+  if (!username || !pass) { errEl.textContent='⚠️ Completa usuario y contraseña'; errEl.classList.add('show'); return; }
+  const userHash = await sha256(username);
   const passHash = await sha256(pass);
-
-  // Cargar credenciales guardadas o usar las predeterminadas
-  const savedCreds = JSON.parse(localStorage.getItem('cubashop_admin_creds') || 'null');
-  const validUserHash = savedCreds ? savedCreds.userHash : await sha256('admin');
-  const validPassHash = savedCreds ? savedCreds.passHash : await sha256('LasT2024!');
-
-  if (userHash === validUserHash && passHash === validPassHash) {
-    sessionStorage.setItem('adminAuth', 'true');
+  const found = getUsers().find(u => u.userHash===userHash && u.passHash===passHash);
+  if (found) {
+    sessionStorage.setItem('adminSession', JSON.stringify({id:found.id,name:found.name,role:found.role,username:found.username}));
     document.getElementById('adminLoginOverlay').classList.remove('active');
-    document.getElementById('adminLogoutBtn').style.display = 'inline-block';
     const panel = document.getElementById('adminPanel');
     const arrow = document.getElementById('adminArrow');
-    panel.classList.add('open');
-    arrow.textContent = '▲';
-    populateAdminFields();
-    populateRatesFields();
+    panel.classList.add('open'); arrow.textContent='▲';
+    applyRoleUI();
+    if (found.role==='superadmin') { populateAdminFields(); populateRatesFields(); }
+    renderProductManager();
     errEl.classList.remove('show');
+    showToast('✅ Bienvenido, '+found.name, 'success');
   } else {
-    errEl.textContent = '❌ Usuario o contraseña incorrectos';
-    errEl.classList.add('show');
-    document.getElementById('adminLoginPass').value = '';
+    errEl.textContent='❌ Usuario o contraseña incorrectos'; errEl.classList.add('show');
+    document.getElementById('adminLoginPass').value='';
   }
 }
-
 function adminLogout(e) {
   if (e) e.stopPropagation();
-  sessionStorage.removeItem('adminAuth');
-  const panel = document.getElementById('adminPanel');
-  const arrow = document.getElementById('adminArrow');
-  panel.classList.remove('open');
-  arrow.textContent = '▼';
-  document.getElementById('adminLogoutBtn').style.display = 'none';
-  showToast('🔒 Sesión cerrada', 'success');
+  sessionStorage.removeItem('adminSession');
+  const panel=document.getElementById('adminPanel'); const arrow=document.getElementById('adminArrow');
+  panel.classList.remove('open'); arrow.textContent='▼';
+  const lb=document.getElementById('adminLogoutBtn');
+  if(lb){lb.textContent='Cerrar sesión';lb.style.display='none';}
+  document.querySelectorAll('.admin-tab').forEach(t=>t.style.display='');
+  showToast('🔒 Sesión cerrada','success');
 }
-
 function toggleAdmin() {
   if (!adminIsLoggedIn()) {
     document.getElementById('adminLoginOverlay').classList.add('active');
-    setTimeout(() => document.getElementById('adminLoginUser').focus(), 100);
+    setTimeout(()=>document.getElementById('adminLoginUser').focus(),100);
     return;
   }
-  const panel = document.getElementById('adminPanel');
-  const arrow = document.getElementById('adminArrow');
+  const panel=document.getElementById('adminPanel'); const arrow=document.getElementById('adminArrow');
   panel.classList.toggle('open');
-  arrow.textContent = panel.classList.contains('open') ? '▲' : '▼';
+  arrow.textContent=panel.classList.contains('open')?'▲':'▼';
   if (panel.classList.contains('open')) {
-    populateAdminFields();
-    populateRatesFields();
+    applyRoleUI();
+    if(isSuperAdmin()){populateAdminFields();populateRatesFields();}
+    renderProductManager();
   }
 }
-
-// Cerrar login al hacer click fuera
-document.getElementById('adminLoginOverlay').addEventListener('click', function(e) {
-  if (e.target === this) this.classList.remove('active');
-});
-
-// Close modal on overlay click
-document.getElementById('cartModal').addEventListener('click', function(e) {
-  if (e.target === this) closeCart();
-});
-
+document.getElementById('adminLoginOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');});
+document.getElementById('cartModal').addEventListener('click',function(e){if(e.target===this)closeCart();});
 // ══════════════════════════════════════
-// CAMBIO DE CREDENCIALES
+// GESTIÓN DE USUARIOS (solo superadmin)
 // ══════════════════════════════════════
-async function changeAdminCredentials() {
-  const newUser = document.getElementById('newAdminUser').value.trim();
-  const newPass = document.getElementById('newAdminPass').value;
-  const confirmPass = document.getElementById('newAdminPassConfirm').value;
-
-  if (!newUser || !newPass || !confirmPass) {
-    showToast('⚠️ Completa todos los campos de credenciales', 'error');
-    return;
+let newUserRoleSelected='editor';
+function selectNewUserRole(role){
+  newUserRoleSelected=role;
+  document.getElementById('newUserRole').value=role;
+  document.getElementById('roleOptSuperadmin').classList.toggle('selected',role==='superadmin');
+  document.getElementById('roleOptEditor').classList.toggle('selected',role==='editor');
+}
+function toggleAddUserForm(){
+  const form=document.getElementById('addUserForm');
+  form.style.display=form.style.display==='none'?'block':'none';
+  if(form.style.display==='block'){
+    ['newUserName','newUserUsername','newUserPassword'].forEach(id=>document.getElementById(id).value='');
+    selectNewUserRole('editor');
   }
-  if (newPass !== confirmPass) {
-    showToast('❌ Las contraseñas no coinciden', 'error');
-    return;
-  }
-  if (newPass.length < 6) {
-    showToast('⚠️ La contraseña debe tener al menos 6 caracteres', 'error');
-    return;
-  }
-
-  const userHash = await sha256(newUser);
-  const passHash = await sha256(newPass);
-
-  localStorage.setItem('cubashop_admin_creds', JSON.stringify({ userHash, passHash }));
-
-  document.getElementById('newAdminUser').value = '';
-  document.getElementById('newAdminPass').value = '';
-  document.getElementById('newAdminPassConfirm').value = '';
-
-  showToast('✅ Credenciales actualizadas correctamente', 'success');
+}
+async function createUser(){
+  const name=document.getElementById('newUserName').value.trim();
+  const username=document.getElementById('newUserUsername').value.trim().toLowerCase();
+  const pass=document.getElementById('newUserPassword').value;
+  const role=newUserRoleSelected;
+  if(!name||!username||!pass){showToast('⚠️ Completa todos los campos','error');return;}
+  if(pass.length<6){showToast('⚠️ La contraseña debe tener al menos 6 caracteres','error');return;}
+  const users=getUsers();
+  if(users.find(u=>u.username===username)){showToast('❌ Ese nombre de usuario ya existe','error');return;}
+  const userHash=await sha256(username); const passHash=await sha256(pass);
+  const newId=users.length>0?Math.max(...users.map(u=>u.id))+1:1;
+  users.push({id:newId,name,username,userHash,passHash,role,createdAt:new Date().toISOString()});
+  saveUsers(users); renderUsersList(); toggleAddUserForm();
+  showToast('✅ Usuario "'+name+'" creado correctamente','success');
+}
+async function deleteUser(id){
+  const current=getCurrentUser();
+  if(current&&current.id===id){showToast('❌ No puedes eliminar tu propia cuenta','error');return;}
+  let users=getUsers();
+  const user=users.find(u=>u.id===id);
+  if(!user)return;
+  if(!confirm('¿Eliminar al usuario "'+user.name+'"?'))return;
+  users=users.filter(u=>u.id!==id); saveUsers(users); renderUsersList();
+  showToast('🗑️ Usuario "'+user.name+'" eliminado','success');
+}
+async function resetUserPassword(id){
+  const newPass=prompt('Nueva contraseña (mínimo 6 caracteres):');
+  if(!newPass)return;
+  if(newPass.length<6){showToast('⚠️ La contraseña debe tener al menos 6 caracteres','error');return;}
+  const users=getUsers(); const user=users.find(u=>u.id===id);
+  if(!user)return;
+  user.passHash=await sha256(newPass); saveUsers(users);
+  showToast('✅ Contraseña de "'+user.name+'" actualizada','success');
+}
+function renderUsersList(){
+  const container=document.getElementById('usersList');
+  if(!container)return;
+  const users=getUsers(); const current=getCurrentUser();
+  container.innerHTML=users.map(u=>`
+    <div class="user-card">
+      <div class="user-card-info">
+        <div class="user-card-name">${u.name} <span style="font-size:12px;color:#666;">@${u.username}</span></div>
+        <span class="user-role-badge ${u.role}">${u.role==='superadmin'?'👑 Super Admin':'✏️ Editor'}</span>
+        <span style="font-size:11px;color:#555;margin-left:8px;">Creado: ${new Date(u.createdAt).toLocaleDateString('es-ES')}</span>
+      </div>
+      <div class="user-card-actions">
+        <button class="user-action-btn edit" onclick="resetUserPassword(${u.id})">🔑 Cambiar clave</button>
+        ${current&&current.id!==u.id?`<button class="user-action-btn delete" onclick="deleteUser(${u.id})">🗑️ Eliminar</button>`:'<span style="font-size:11px;color:#555;">(tú)</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+// ══════════════════════════════════════
+// CAMBIO DE CREDENCIALES PROPIAS
+// ══════════════════════════════════════
+async function changeAdminCredentials(){
+  const newUsername=document.getElementById('newAdminUser').value.trim().toLowerCase();
+  const newPass=document.getElementById('newAdminPass').value;
+  const confirmPass=document.getElementById('newAdminPassConfirm').value;
+  if(!newUsername||!newPass||!confirmPass){showToast('⚠️ Completa todos los campos','error');return;}
+  if(newPass!==confirmPass){showToast('❌ Las contraseñas no coinciden','error');return;}
+  if(newPass.length<6){showToast('⚠️ Mínimo 6 caracteres','error');return;}
+  const current=getCurrentUser(); if(!current)return;
+  const users=getUsers(); const me=users.find(u=>u.id===current.id); if(!me)return;
+  const conflict=users.find(u=>u.username===newUsername&&u.id!==current.id);
+  if(conflict){showToast('❌ Ese nombre de usuario ya está en uso','error');return;}
+  me.username=newUsername; me.userHash=await sha256(newUsername); me.passHash=await sha256(newPass);
+  saveUsers(users);
+  ['newAdminUser','newAdminPass','newAdminPassConfirm'].forEach(id=>document.getElementById(id).value='');
+  sessionStorage.setItem('adminSession',JSON.stringify({id:me.id,name:me.name,role:me.role,username:me.username}));
+  showToast('✅ Credenciales actualizadas. Vuelve a iniciar sesión.','success');
+  setTimeout(()=>adminLogout(),2000);
 }
 
 // ══════════════════════════════════════
@@ -2444,6 +2632,7 @@ async function changeAdminCredentials() {
 // ══════════════════════════════════════
 renderProducts();
 populateAdminFields();
+initDefaultUsers();
 </script>
 </body>
 </html>
