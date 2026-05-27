@@ -710,6 +710,105 @@ main {
 .toast.success { border-left: 4px solid var(--success); }
 .toast.error { border-left: 4px solid var(--cuban-red); }
 
+/* ══ ADMIN LOGIN MODAL ══ */
+.admin-login-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(6px);
+  z-index: 3000;
+  align-items: center;
+  justify-content: center;
+}
+.admin-login-overlay.active { display: flex; }
+.admin-login-box {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 20px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  animation: slideUp .3s ease;
+}
+.admin-login-box h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.admin-login-box p {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 24px;
+}
+.admin-login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+.admin-login-field label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.admin-login-field input {
+  background: #2a2a2a;
+  border: 1.5px solid #444;
+  color: #fff;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: border .15s;
+}
+.admin-login-field input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.admin-login-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--gold);
+  color: var(--dark);
+  border: none;
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all .2s;
+}
+.admin-login-btn:hover { background: #e0940a; transform: translateY(-1px); }
+.admin-login-error {
+  background: #3d1a1a;
+  color: #f87171;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-top: 12px;
+  display: none;
+}
+.admin-login-error.show { display: block; }
+.admin-logout-btn {
+  background: none;
+  border: 1px solid #555;
+  color: #aaa;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: all .15s;
+}
+.admin-logout-btn:hover { border-color: var(--cuban-red); color: var(--cuban-red); }
+
 /* Admin config panel */
 .admin-bar {
   background: var(--mid);
@@ -1013,11 +1112,35 @@ main {
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- ADMIN LOGIN MODAL -->
+<div class="admin-login-overlay" id="adminLoginOverlay">
+  <div class="admin-login-box">
+    <div style="font-size:40px;margin-bottom:12px;">🔐</div>
+    <h3>Panel de Administración</h3>
+    <p>Ingresa tus credenciales para continuar</p>
+    <div class="admin-login-field">
+      <label>Usuario</label>
+      <input type="text" id="adminLoginUser" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter')adminDoLogin()">
+    </div>
+    <div class="admin-login-field">
+      <label>Contraseña</label>
+      <input type="password" id="adminLoginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')adminDoLogin()">
+    </div>
+    <button class="admin-login-btn" onclick="adminDoLogin()">
+      <i class="fas fa-unlock"></i> Entrar
+    </button>
+    <div class="admin-login-error" id="adminLoginError">
+      ❌ Usuario o contraseña incorrectos
+    </div>
+  </div>
+</div>
+
 <!-- ADMIN BAR -->
 <div class="admin-bar">
   <button class="admin-toggle" onclick="toggleAdmin()">
     <span>⚙️ Panel de Administración</span>
     <span id="adminArrow">▼</span>
+    <button class="admin-logout-btn" id="adminLogoutBtn" onclick="adminLogout(event)" style="display:none;">Cerrar sesión</button>
   </button>
   <div class="admin-panel" id="adminPanel">
 
@@ -1084,6 +1207,24 @@ main {
         </div>
       </div>
       <button class="admin-save" onclick="saveAdminConfig()">💾 Guardar Configuración</button>
+      <div style="margin-top:20px;padding:16px;background:#222;border-radius:10px;border:1px solid #333;">
+        <div style="color:#F4A60D;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">🔐 Cambiar Credenciales de Acceso</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Nuevo usuario</label>
+            <input type="text" id="newAdminUser" placeholder="nuevo usuario" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;" autocomplete="off">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Nueva contraseña</label>
+            <input type="password" id="newAdminPass" placeholder="••••••••" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;" autocomplete="new-password">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <label style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;">Confirmar contraseña</label>
+            <input type="password" id="newAdminPassConfirm" placeholder="••••••••" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:9px 12px;border-radius:6px;font-size:13px;" autocomplete="new-password">
+          </div>
+        </div>
+        <button class="admin-save" onclick="changeAdminCredentials()" style="margin-top:12px;background:#003F87;">🔑 Cambiar Credenciales</button>
+      </div>
       <div style="margin-top:16px; padding:12px; background:#2a2a2a; border-radius:8px; font-size:12px; color:#888; line-height:1.6;">
         <strong style="color:#ccc;">📧 Para notificaciones de email:</strong><br>
         1. Crea cuenta gratis en <a href="https://www.emailjs.com" target="_blank" style="color:var(--gold)">emailjs.com</a><br>
@@ -2172,17 +2313,131 @@ function showToast(msg, type = 'success') {
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
+// ══════════════════════════════════════
+// ADMIN AUTH
+// ══════════════════════════════════════
+// Credenciales hasheadas con SHA-256
+// Usuario: admin | Contraseña: LasT2024!
+const ADMIN_USER_HASH = 'b94b1c0a7e3e7b8e6a2f9d1c4b5e8f3a2d6c9e1b4f7a0d3e6b9c2f5a8d1e4b7'; // placeholder - se genera en runtime
+const ADMIN_PASS_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // placeholder
+
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function adminIsLoggedIn() {
+  return sessionStorage.getItem('adminAuth') === 'true';
+}
+
+async function adminDoLogin() {
+  const user = document.getElementById('adminLoginUser').value.trim();
+  const pass = document.getElementById('adminLoginPass').value;
+  const errEl = document.getElementById('adminLoginError');
+
+  if (!user || !pass) {
+    errEl.textContent = '⚠️ Completa usuario y contraseña';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const userHash = await sha256(user);
+  const passHash = await sha256(pass);
+
+  // Cargar credenciales guardadas o usar las predeterminadas
+  const savedCreds = JSON.parse(localStorage.getItem('cubashop_admin_creds') || 'null');
+  const validUserHash = savedCreds ? savedCreds.userHash : await sha256('admin');
+  const validPassHash = savedCreds ? savedCreds.passHash : await sha256('LasT2024!');
+
+  if (userHash === validUserHash && passHash === validPassHash) {
+    sessionStorage.setItem('adminAuth', 'true');
+    document.getElementById('adminLoginOverlay').classList.remove('active');
+    document.getElementById('adminLogoutBtn').style.display = 'inline-block';
+    const panel = document.getElementById('adminPanel');
+    const arrow = document.getElementById('adminArrow');
+    panel.classList.add('open');
+    arrow.textContent = '▲';
+    populateAdminFields();
+    populateRatesFields();
+    errEl.classList.remove('show');
+  } else {
+    errEl.textContent = '❌ Usuario o contraseña incorrectos';
+    errEl.classList.add('show');
+    document.getElementById('adminLoginPass').value = '';
+  }
+}
+
+function adminLogout(e) {
+  if (e) e.stopPropagation();
+  sessionStorage.removeItem('adminAuth');
+  const panel = document.getElementById('adminPanel');
+  const arrow = document.getElementById('adminArrow');
+  panel.classList.remove('open');
+  arrow.textContent = '▼';
+  document.getElementById('adminLogoutBtn').style.display = 'none';
+  showToast('🔒 Sesión cerrada', 'success');
+}
+
 function toggleAdmin() {
+  if (!adminIsLoggedIn()) {
+    document.getElementById('adminLoginOverlay').classList.add('active');
+    setTimeout(() => document.getElementById('adminLoginUser').focus(), 100);
+    return;
+  }
   const panel = document.getElementById('adminPanel');
   const arrow = document.getElementById('adminArrow');
   panel.classList.toggle('open');
   arrow.textContent = panel.classList.contains('open') ? '▲' : '▼';
+  if (panel.classList.contains('open')) {
+    populateAdminFields();
+    populateRatesFields();
+  }
 }
+
+// Cerrar login al hacer click fuera
+document.getElementById('adminLoginOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('active');
+});
 
 // Close modal on overlay click
 document.getElementById('cartModal').addEventListener('click', function(e) {
   if (e.target === this) closeCart();
 });
+
+// ══════════════════════════════════════
+// CAMBIO DE CREDENCIALES
+// ══════════════════════════════════════
+async function changeAdminCredentials() {
+  const newUser = document.getElementById('newAdminUser').value.trim();
+  const newPass = document.getElementById('newAdminPass').value;
+  const confirmPass = document.getElementById('newAdminPassConfirm').value;
+
+  if (!newUser || !newPass || !confirmPass) {
+    showToast('⚠️ Completa todos los campos de credenciales', 'error');
+    return;
+  }
+  if (newPass !== confirmPass) {
+    showToast('❌ Las contraseñas no coinciden', 'error');
+    return;
+  }
+  if (newPass.length < 6) {
+    showToast('⚠️ La contraseña debe tener al menos 6 caracteres', 'error');
+    return;
+  }
+
+  const userHash = await sha256(newUser);
+  const passHash = await sha256(newPass);
+
+  localStorage.setItem('cubashop_admin_creds', JSON.stringify({ userHash, passHash }));
+
+  document.getElementById('newAdminUser').value = '';
+  document.getElementById('newAdminPass').value = '';
+  document.getElementById('newAdminPassConfirm').value = '';
+
+  showToast('✅ Credenciales actualizadas correctamente', 'success');
+}
 
 // ══════════════════════════════════════
 // INIT
