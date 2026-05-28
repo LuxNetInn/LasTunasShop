@@ -2553,6 +2553,13 @@ async function adminDoLogin() {
   const pass = document.getElementById('adminLoginPass').value;
   const errEl = document.getElementById('adminLoginError');
   if (!username || !pass) { errEl.textContent='⚠️ Completa usuario y contraseña'; errEl.classList.add('show'); return; }
+  // Sincronizar usuarios desde KV antes de autenticar (garantiza datos actualizados)
+  try {
+    const kvUsers = await kvGet('users');
+    if (kvUsers && Array.isArray(kvUsers) && kvUsers.length > 0) {
+      localStorage.setItem('cubashop_users', JSON.stringify(kvUsers));
+    }
+  } catch(e) { /* continuar con localStorage si falla KV */ }
   const userHash = await sha256(username);
   const passHash = await sha256(pass);
   const found = getUsers().find(u => u.userHash===userHash && u.passHash===passHash);
