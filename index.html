@@ -1650,6 +1650,15 @@ function renderProductsManager() {
           </select>
         </div>
         <div class="pm-inline-field">
+          <label>📦 Proveedor asignado</label>
+          <select id="pm-supplier-${p.id}">
+            <option value="">— Sin asignar —</option>
+            ${getUsers().filter(u=>u.role==='editor'||u.role==='superadmin').map(u=>
+              `<option value="${u.id}" ${p.supplierId===u.id?'selected':''}>${u.name} (@${u.username})</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div class="pm-inline-field">
           <label>Descripción</label>
           <textarea id="pm-desc-${p.id}">${escHtml(p.desc)}</textarea>
         </div>
@@ -1731,6 +1740,8 @@ function saveProduct(id) {
   p.priceUSD = parseFloat(document.getElementById(`pm-usd-${id}`).value) || 0;
   p.priceCUP = parseInt(document.getElementById(`pm-cup-${id}`).value) || 0;
   p.stock    = parseInt(document.getElementById(`pm-stock-${id}`).value) || 0;
+  const supplierEl = document.getElementById(`pm-supplier-${id}`);
+  if (supplierEl) p.supplierId = supplierEl.value ? parseInt(supplierEl.value) : null;
   saveProducts();
   renderProducts();
   renderProductsManager();
@@ -1847,6 +1858,16 @@ function changeQty(id, delta) {
 function addToCart(id) {
   const product = PRODUCTS.find(p => p.id === id);
   const qty = productQtys[id] || 1;
+  // Restricción: solo productos del mismo proveedor
+  if (cart.length > 0) {
+    const cartSupplierId = cart[0].supplierId || null;
+    const productSupplierId = product.supplierId || null;
+    if (cartSupplierId !== productSupplierId) {
+      const supplierName = getSupplierName(cartSupplierId);
+      showToast(`⚠️ Solo puedes agregar productos del mismo proveedor. Tu carrito tiene productos de: ${supplierName}`, 'error');
+      return;
+    }
+  }
   const existing = cart.find(i => i.id === id);
   if (existing) {
     existing.qty += qty;
@@ -1862,6 +1883,18 @@ function addToCart(id) {
     btn.innerHTML = '<i class="fas fa-cart-plus"></i> Agregar al Carrito';
   }, 1800);
   showToast(`🛒 ${product.name} agregado al carrito`, 'success');
+}
+function getSupplierName(supplierId) {
+  if (!supplierId) return 'Sin proveedor asignado';
+  const users = getUsers();
+  const u = users.find(x => x.id === supplierId);
+  return u ? u.name : 'Proveedor desconocido';
+}
+function getSupplierWhatsApp(supplierId) {
+  if (!supplierId) return null;
+  const users = getUsers();
+  const u = users.find(x => x.id === supplierId);
+  return u && u.whatsapp ? u.whatsapp.replace(/[^0-9+]/g, '') : null;
 }
 
 function updateCartCount() {
@@ -2298,22 +2331,65 @@ function copyAddr(addr) {
 async function confirmPayment() {
   const btn = document.getElementById('confirmPayBtn');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando notificación...';
-
-
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando pedido...';
+  const order = window.currentOrder;
+  const supplierId = cart.length > 0 ? (cart[0].supplierId || null) : null;
+  const waNumber = getSupplierWhatsApp(supplierId);
+  const supplierName = getSupplierName(supplierId);
   cart = [];
   updateCartCount();
   orderStep = 'success';
   renderCartModal();
+  if (waNumber) {
+    const msg = buildWhatsAppMessage(order, supplierName);
+    const waUrl = 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(msg);
+    setTimeout(function(){ window.open(waUrl, '_blank'); }, 800);
+    showToast('📱 Notificando al proveedor por WhatsApp...', 'success');
+  } else {
+    showToast('✅ Pedido confirmado', 'success');
+  }
 }
-
+function buildWhatsAppMessage(order, supplierName) {
+  var lines = [];
+  lines.push('🛒 *NUEVO PEDIDO — Las Tunas Shop*');
+  lines.push('');
+  lines.push('📋 *N° Pedido:* ' + order.id);
+  lines.push('📅 *Fecha:* ' + new Date().toLocaleString('es-ES'));
+  lines.push('');
+  lines.push('👤 *CLIENTE (quien paga):*');
+  lines.push('  • Nombre: ' + order.clientName);
+  lines.push('  • Email: ' + order.clientEmail);
+  if (order.clientPhone) lines.push('  • Teléfono: ' + order.clientPhone);
+  if (order.clientCity) lines.push('  • Ciudad: ' + order.clientCity);
+  lines.push('');
+  lines.push('📦 *DESTINATARIO (quien recibe):*');
+  lines.push('  • Nombre: ' + order.recipientName);
+  if (order.recipientPhone) lines.push('  • Teléfono: ' + order.recipientPhone);
+  lines.push('  • Dirección: ' + order.recipientAddress);
+  lines.push('');
+  lines.push('🛍️ *PRODUCTOS PEDIDOS:*');
+  order.items.split('\n').forEach(function(i){ lines.push('  • ' + i); });
+  lines.push('');
+  lines.push('💰 *RESUMEN DE PAGO:*');
+  lines.push('  • Subtotal: $' + order.subtotalUSD + ' USD');
+  lines.push('  • Transporte: $' + order.transportFee + ' USD');
+  lines.push('  • Gestión: $' + order.processFee + ' USD');
+  lines.push('  • *TOTAL: $' + order.totalUSD + ' USD*');
+  lines.push('  • Método de pago: ' + getPaymentLabel(order.payment));
+  lines.push('  • Pagador: ' + (order.payer === 'usa' ? '🇺🇸 Estados Unidos' : '📍 Las Tunas'));
+  if (order.notes) { lines.push(''); lines.push('📝 *Notas:* ' + order.notes); }
+  lines.push('');
+  lines.push('─────────────────────');
+  lines.push('⚠️ Por favor confirma recepción de este pedido.');
+  return lines.join('\n');
+}
 function renderSuccess() {
   const order = window.currentOrder;
   return `
     <div class="success-screen">
       <div class="check">✅</div>
       <h3>¡Pedido Confirmado!</h3>
-      <p>Tu pedido ha sido registrado. Recibirás confirmación por email en breve. Nos pondremos en contacto contigo para coordinar la entrega en Las Tunas.</p>
+      <p>Tu pedido ha sido registrado. El proveedor ha sido notificado por WhatsApp y se pondrá en contacto contigo para coordinar la entrega en Las Tunas.</p>
       <div class="success-details">
         <strong>N° Pedido:</strong> ${order.id}<br>
         <strong>Cliente:</strong> ${order.clientName}<br>
@@ -2510,6 +2586,13 @@ function renderUsersList(){
         <div class="user-card-name">${u.name} <span style="font-size:12px;color:#666;">@${u.username}</span></div>
         <span class="user-role-badge ${u.role}">${u.role==='superadmin'?'👑 Super Admin':'✏️ Editor'}</span>
         <span style="font-size:11px;color:#555;margin-left:8px;">Creado: ${new Date(u.createdAt).toLocaleDateString('es-ES')}</span>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:#888;">📱 WhatsApp:</span>
+          <input type="text" id="wa-${u.id}" value="${u.whatsapp||''}" placeholder="+1 305 555 1234"
+            style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;width:180px;"
+            onchange="updateUserWhatsApp(${u.id}, this.value)">
+          <button class="user-action-btn edit" onclick="saveUserWhatsApp(${u.id})" style="padding:4px 10px;font-size:11px;">💾 Guardar</button>
+        </div>
       </div>
       <div class="user-card-actions">
         <button class="user-action-btn edit" onclick="resetUserPassword(${u.id})">🔑 Cambiar clave</button>
@@ -2517,6 +2600,21 @@ function renderUsersList(){
       </div>
     </div>
   `).join('');
+}
+function updateUserWhatsApp(id, val) {
+  // Solo actualiza en memoria mientras se escribe
+  const users = getUsers();
+  const u = users.find(x => x.id === id);
+  if (u) { u.whatsapp = val.trim(); saveUsers(users); }
+}
+function saveUserWhatsApp(id) {
+  const val = document.getElementById('wa-' + id)?.value?.trim() || '';
+  const users = getUsers();
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  u.whatsapp = val;
+  saveUsers(users);
+  showToast('✅ WhatsApp de "' + u.name + '" guardado', 'success');
 }
 // ══════════════════════════════════════
 // CAMBIO DE CREDENCIALES PROPIAS
