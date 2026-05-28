@@ -1625,7 +1625,16 @@ function switchAdminTab(tab, btn) {
 // ══════════════════════════════════════
 function renderProductsManager() {
   const container = document.getElementById('productsManager');
-  container.innerHTML = PRODUCTS.map(p => `
+  const currentUser = getCurrentUser();
+  // Si es Editor, solo muestra sus propios productos
+  const visibleProducts = (currentUser && currentUser.role === 'editor')
+    ? PRODUCTS.filter(p => p.supplierId === currentUser.id)
+    : PRODUCTS;
+  if (currentUser && currentUser.role === 'editor' && visibleProducts.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:14px;">📦 Aún no tienes productos asignados. Crea uno con el botón <strong>Nuevo Producto</strong>.</div>';
+    return;
+  }
+  container.innerHTML = visibleProducts.map(p => `
     <div class="pm-card" id="pmc-${p.id}">
       <div class="pm-card-img" onclick="triggerImageUpload(${p.id})">
         ${p.image
@@ -1649,15 +1658,23 @@ function renderProductsManager() {
             ).join('')}
           </select>
         </div>
-        <div class="pm-inline-field">
+        ${(function(){
+          const cu = getCurrentUser();
+          if (cu && cu.role === 'editor') {
+            // Editor: el producto siempre es suyo, no mostrar selector
+            return '<input type="hidden" id="pm-supplier-' + p.id + '" value="' + cu.id + '">';
+          }
+          // SuperAdmin: mostrar selector completo
+          return \`<div class="pm-inline-field">
           <label>📦 Proveedor asignado</label>
-          <select id="pm-supplier-${p.id}">
+          <select id="pm-supplier-\${p.id}">
             <option value="">— Sin asignar —</option>
-            ${getUsers().filter(u=>u.role==='editor'||u.role==='superadmin').map(u=>
-              `<option value="${u.id}" ${p.supplierId===u.id?'selected':''}>${u.name} (@${u.username})</option>`
+            \${getUsers().filter(u=>u.role==='editor'||u.role==='superadmin').map(u=>
+              \`<option value="\${u.id}" \${p.supplierId===u.id?'selected':''}>\${u.name} (@\${u.username})</option>\`
             ).join('')}
           </select>
-        </div>
+        </div>\`;
+        })()}
         <div class="pm-inline-field">
           <label>Descripción</label>
           <textarea id="pm-desc-${p.id}">${escHtml(p.desc)}</textarea>
@@ -1772,6 +1789,9 @@ function deleteProduct(id) {
 
 function addNewProduct() {
   const newId = Date.now();
+  const currentUser = getCurrentUser();
+  // Si es Editor, asignar el producto a sí mismo automáticamente
+  const supplierId = (currentUser && currentUser.role === 'editor') ? currentUser.id : null;
   PRODUCTS.push({
     id: newId,
     emoji: '🆕',
@@ -1783,6 +1803,7 @@ function addNewProduct() {
     stock: 0,
     active: true,
     image: '',
+    supplierId: supplierId,
   });
   saveProducts();
   renderProductsManager();
