@@ -1661,19 +1661,10 @@ function renderProductsManager() {
         ${(function(){
           const cu = getCurrentUser();
           if (cu && cu.role === 'editor') {
-            // Editor: el producto siempre es suyo, no mostrar selector
             return '<input type="hidden" id="pm-supplier-' + p.id + '" value="' + cu.id + '">';
           }
-          // SuperAdmin: mostrar selector completo
-          return \`<div class="pm-inline-field">
-          <label>📦 Proveedor asignado</label>
-          <select id="pm-supplier-\${p.id}">
-            <option value="">— Sin asignar —</option>
-            \${getUsers().filter(u=>u.role==='editor'||u.role==='superadmin').map(u=>
-              \`<option value="\${u.id}" \${p.supplierId===u.id?'selected':''}>\${u.name} (@\${u.username})</option>\`
-            ).join('')}
-          </select>
-        </div>\`;
+          const opts = getUsers().filter(u=>u.role==='editor'||u.role==='superadmin').map(u=>'<option value="'+u.id+'"'+(p.supplierId===u.id?' selected':'')+'>'+u.name+' (@'+u.username+')</option>').join('');
+          return '<div class="pm-inline-field"><label>📦 Proveedor asignado</label><select id="pm-supplier-'+p.id+'"><option value="">— Sin asignar —</option>'+opts+'</select></div>';
         })()}
         <div class="pm-inline-field">
           <label>Descripción</label>
