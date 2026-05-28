@@ -1449,7 +1449,32 @@ main {
 <script>
 
 // ══════════════════════════════════════
-// PRODUCTOS — DINÁMICOS (localStorage)
+// ══════════════════════════════════════
+// API LAYER — Cloudflare KV (persistente)
+// ══════════════════════════════════════
+const API_URL = 'https://lastunasshop-api.luxnet-innovate.workers.dev';
+const API_SECRET = 'lts_api_2024_secure';
+
+async function kvGet(key) {
+  try {
+    const r = await fetch(API_URL + '/api/' + key);
+    if (r.status === 404) return null;
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function kvSet(key, value) {
+  try {
+    await fetch(API_URL + '/api/' + key, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_SECRET },
+      body: JSON.stringify(value)
+    });
+  } catch(e) { console.error('KV set error:', e); }
+}
+
+// ══════════════════════════════════════
+// PRODUCTOS — DINÁMICOS (Cloudflare KV)
 // ══════════════════════════════════════
 const DEFAULT_PRODUCTS = [
   { id:1, emoji:'📦', category:'Alimentos', name:'Combo Básico Mensual', desc:'Arroz, frijoles, aceite, azúcar y productos esenciales para un mes.', priceUSD:45, priceCUP:4500, stock:10, active:true, image:'' },
@@ -1463,13 +1488,29 @@ const DEFAULT_PRODUCTS = [
 ];
 
 function loadProducts() {
+  // Carga desde localStorage como caché local (se sincroniza con KV al iniciar)
   const saved = localStorage.getItem('cubashop_products');
   return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
 }
 function saveProducts() {
   localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+  kvSet('products', PRODUCTS); // Sincronizar con KV
 }
 let PRODUCTS = loadProducts();
+// Sincronizar datos desde KV al cargar la página
+kvGet('products').then(function(data) {
+  if (data && Array.isArray(data)) {
+    PRODUCTS = data;
+    localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+    renderProducts();
+  }
+});
+kvGet('config').then(function(data) {
+  if (data && typeof data === 'object') {
+    config = Object.assign(config, data);
+    localStorage.setItem('cubashop_config', JSON.stringify(config));
+  }
+});
 
 // ══════════════════════════════════════
 // ESTADO
@@ -1510,6 +1551,7 @@ function saveAdminConfig() {
 
 
   localStorage.setItem('cubashop_config', JSON.stringify(config));
+  kvSet('config', config);
   showToast('✅ Configuración guardada correctamente', 'success');
 }
 
@@ -1546,6 +1588,7 @@ function saveRatesConfig() {
   config.feeProcessVal     = parseFloat(document.getElementById('fee-process-val').value) || 0;
   config.feeProcessLabel   = document.getElementById('fee-process-label').value || 'Procesamiento';
   localStorage.setItem('cubashop_config', JSON.stringify(config));
+  kvSet('config', config);
   showToast('✅ Tasas y fees guardados', 'success');
   updateFeePreview();
 }
@@ -2450,15 +2493,35 @@ async function sha256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 async function initDefaultUsers() {
-  if (localStorage.getItem('cubashop_users')) return;
+  // Intentar cargar usuarios desde KV primero
+  const kvUsers = await kvGet('users');
+  if (kvUsers && Array.isArray(kvUsers) && kvUsers.length > 0) {
+    localStorage.setItem('cubashop_users', JSON.stringify(kvUsers));
+    return;
+  }
+  // Si no hay usuarios en KV, verificar localStorage
+  if (localStorage.getItem('cubashop_users')) {
+    // Sincronizar localStorage existente con KV
+    const localUsers = JSON.parse(localStorage.getItem('cubashop_users'));
+    if (localUsers && localUsers.length > 0) {
+      await kvSet('users', localUsers);
+      return;
+    }
+  }
+  // Crear usuario admin por defecto
   const userHash = await sha256('admin');
   const passHash = await sha256('LasT2024!');
-  localStorage.setItem('cubashop_users', JSON.stringify([
+  const defaultUsers = [
     { id: 1, name: 'Administrador', username: 'admin', userHash, passHash, role: 'superadmin', createdAt: new Date().toISOString() }
-  ]));
+  ];
+  localStorage.setItem('cubashop_users', JSON.stringify(defaultUsers));
+  await kvSet('users', defaultUsers);
 }
 function getUsers() { return JSON.parse(localStorage.getItem('cubashop_users') || '[]'); }
-function saveUsers(users) { localStorage.setItem('cubashop_users', JSON.stringify(users)); }
+function saveUsers(users) {
+  localStorage.setItem('cubashop_users', JSON.stringify(users));
+  kvSet('users', users); // Sincronizar con KV
+}
 function getCurrentUser() {
   const data = sessionStorage.getItem('adminSession');
   return data ? JSON.parse(data) : null;
