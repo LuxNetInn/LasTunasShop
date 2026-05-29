@@ -2750,37 +2750,41 @@ async function confirmPayment() {
 }
 function buildWhatsAppMessage(order, supplierName) {
   var lines = [];
-  lines.push('🛒 *NUEVO PEDIDO — Las Tunas Shop*');
+  lines.push('🛒✨ *NUEVO PEDIDO — Las Tunas Shop* ✨🛒');
   lines.push('');
-  lines.push('📋 *N° Pedido:* ' + order.id);
-  lines.push('📅 *Fecha:* ' + new Date().toLocaleString('es-ES'));
+  lines.push('🔖 *N° Pedido:* ' + order.id);
+  lines.push('🗓️ *Fecha:* ' + new Date().toLocaleString('es-ES'));
   lines.push('');
-  lines.push('👤 *CLIENTE (quien paga):*');
-  lines.push('  • Nombre: ' + order.clientName);
-  lines.push('  • Email: ' + order.clientEmail);
-  if (order.clientPhone) lines.push('  • Teléfono: ' + order.clientPhone);
-  if (order.clientCity) lines.push('  • Ciudad: ' + order.clientCity);
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('👤 *CLIENTE:*');
+  lines.push('  👨‍💼 Nombre: ' + order.clientName);
+  lines.push('  📧 Email: ' + order.clientEmail);
+  if (order.clientPhone) lines.push('  📱 Teléfono: ' + order.clientPhone);
   lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
   lines.push('📦 *DESTINATARIO (quien recibe):*');
-  lines.push('  • Nombre: ' + order.recipientName);
-  if (order.recipientPhone) lines.push('  • Teléfono: ' + order.recipientPhone);
-  if (order.recipientMunicipio) lines.push('  • Municipio: ' + order.recipientMunicipio);
-  lines.push('  • Dirección: ' + order.recipientAddress);
+  lines.push('  🙋 Nombre: ' + order.recipientName);
+  if (order.recipientPhone) lines.push('  📞 Teléfono: ' + order.recipientPhone);
+  if (order.recipientMunicipio) lines.push('  🏙️ Municipio: ' + order.recipientMunicipio);
+  lines.push('  🏠 Dirección: ' + order.recipientAddress);
   lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
   lines.push('🛍️ *PRODUCTOS PEDIDOS:*');
-  order.items.split('\n').forEach(function(i){ lines.push('  • ' + i); });
+  order.items.split('\n').forEach(function(i){ if(i.trim()) lines.push('  🔹 ' + i); });
   lines.push('');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
   lines.push('💰 *RESUMEN DE PAGO:*');
-  lines.push('  • Subtotal: $' + order.subtotalUSD + ' USD');
-  lines.push('  • Transporte: $' + order.transportFee + ' USD');
-  lines.push('  • Gestión: $' + order.processFee + ' USD');
-  lines.push('  • *TOTAL: $' + order.totalUSD + ' USD*');
-  lines.push('  • Método de pago: ' + getPaymentLabel(order.payment));
-  lines.push('  • Pagador: ' + (order.payer === 'usa' ? '🇺🇸 Estados Unidos' : '📍 Las Tunas'));
+  lines.push('  💵 Subtotal: $' + order.subtotalUSD + ' USD');
+  lines.push('  🚚 Transporte: $' + order.transportFee + ' USD');
+  lines.push('  ⚙️ Gestión: $' + order.processFee + ' USD');
+  lines.push('  💳 Método: ' + getPaymentLabel(order.payment));
+  lines.push('');
+  lines.push('  💎 *TOTAL: $' + order.totalUSD + ' USD*');
   if (order.notes) { lines.push(''); lines.push('📝 *Notas:* ' + order.notes); }
   lines.push('');
-  lines.push('─────────────────────');
-  lines.push('⚠️ Por favor confirma recepción de este pedido.');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('✅ Por favor confirma recepción de este pedido.');
+  lines.push('🙏 ¡Gracias por tu atención!');
   return lines.join('\n');
 }
 function renderSuccess() {
