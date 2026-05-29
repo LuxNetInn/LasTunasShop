@@ -3133,6 +3133,34 @@ async function changeAdminCredentials(){
 renderProducts();
 populateAdminFields();
 initDefaultUsers();
+
+// Abrir panel admin si la URL es /admin
+(function checkAdminRoute() {
+  const path = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+  if (path === '/admin') {
+    // Scroll al panel
+    setTimeout(() => {
+      const bar = document.querySelector('.admin-bar');
+      if (bar) bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Si ya está logueado, abrir el panel directamente
+      if (adminIsLoggedIn()) {
+        const panel = document.getElementById('adminPanel');
+        const arrow = document.getElementById('adminArrow');
+        if (panel && !panel.classList.contains('open')) {
+          panel.classList.add('open');
+          if (arrow) arrow.textContent = '▲';
+          applyRoleUI();
+          if (isSuperAdmin()) { populateAdminFields(); populateRatesFields(); }
+          renderProductManager();
+        }
+      } else {
+        // Mostrar login
+        document.getElementById('adminLoginOverlay').classList.add('active');
+        setTimeout(() => document.getElementById('adminLoginUser').focus(), 200);
+      }
+    }, 300);
+  }
+})();
 </script>
 </body>
 </html>
