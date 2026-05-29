@@ -710,6 +710,82 @@ main {
 .toast.success { border-left: 4px solid var(--success); }
 .toast.error { border-left: 4px solid var(--cuban-red); }
 
+/* ══ CATEGORY FILTERS ══ */
+.cat-filter {
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.cat-filter:hover { border-color: var(--gold); background: #fffdf5; }
+.cat-filter.active { background: var(--cuban-blue); color: #fff; border-color: var(--cuban-blue); }
+
+/* ══ OFFER BADGE ══ */
+.offer-star-shape {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 10;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-offer 1.5s ease-in-out infinite;
+}
+.offer-star-shape svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.offer-star-text {
+  position: relative;
+  z-index: 1;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 44px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+}
+@keyframes pulse-offer {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ══ MOBILE IMPROVEMENTS ══ */
+@media (max-width: 600px) {
+  .header-main { padding: 10px 14px; gap: 10px; }
+  .logo { font-size: 20px; }
+  .hero { padding: 40px 16px; }
+  .hero h1 { font-size: 28px; }
+  main { padding: 20px 12px; }
+  .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .product-img { height: 150px; }
+  .product-name { font-size: 15px; }
+  .product-prices { gap: 6px; }
+  .price-tag { padding: 4px 8px; min-width: 60px; }
+  .price-tag .amount { font-size: 14px; }
+  #categoryFilters { gap: 6px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+  .cat-filter { padding: 6px 12px; font-size: 12px; }
+  .admin-tabs { flex-wrap: wrap; gap: 4px; padding: 8px; }
+  .admin-tab { font-size: 11px; padding: 8px 10px; }
+  .admin-grid { grid-template-columns: 1fr; }
+  .pm-card { flex-direction: column; }
+  .pm-card-img { width: 100%; height: 180px; }
+  .pm-price-row { flex-direction: column; }
+  .pm-stock-row { flex-direction: column; }
+  .modal { border-radius: 16px 16px 0 0; margin-top: auto; margin-bottom: 0; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .payer-selector { grid-template-columns: 1fr 1fr; }
+  .payment-methods { grid-template-columns: 1fr 1fr; }
+  .user-card { flex-direction: column; gap: 10px; }
+  .user-card-actions { flex-direction: row; flex-wrap: wrap; }
+  .section-title { font-size: 20px; }
+}
+
 /* ══ ADMIN LOGIN MODAL ══ */
 .admin-login-overlay {
   display: none;
@@ -1172,6 +1248,19 @@ main {
 <!-- PRODUCTS -->
 <main>
   <div class="section-title">🛍️ Productos — Entrega en Las Tunas y Municipios</div>
+  <!-- Filtro de categorías -->
+  <div id="categoryFilters" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
+    <button class="cat-filter active" onclick="filterByCategory('all', this)">🛍️ Todos</button>
+    <button class="cat-filter" onclick="filterByCategory('Alimentos', this)">🍎 Alimentos</button>
+    <button class="cat-filter" onclick="filterByCategory('Aseo e Higiene', this)">🧴 Aseo</button>
+    <button class="cat-filter" onclick="filterByCategory('Electrodomésticos', this)">🔌 Electrodomésticos</button>
+    <button class="cat-filter" onclick="filterByCategory('Medicamentos', this)">💊 Medicamentos</button>
+    <button class="cat-filter" onclick="filterByCategory('Ropa y Calzado', this)">👕 Ropa</button>
+    <button class="cat-filter" onclick="filterByCategory('Bebé', this)">🍼 Bebé</button>
+    <button class="cat-filter" onclick="filterByCategory('Tecnología', this)">💻 Tecnología</button>
+    <button class="cat-filter" onclick="filterByCategory('Herramientas', this)">🛠️ Herramientas</button>
+    <button class="cat-filter" onclick="filterByCategory('Combos', this)">🧺 Combos</button>
+  </div>
   <div class="products-grid" id="productsGrid"></div>
 </main>
 
@@ -1226,7 +1315,8 @@ main {
     <!-- TABS -->
     <div class="admin-tabs" id="adminTabs">
       <button class="admin-tab active" id="tab-btn-config" onclick="switchAdminTab('config', this)">⚙️ Configuración</button>
-      <button class="admin-tab" id="tab-btn-rates" onclick="switchAdminTab('rates', this)">💱 Tasas y Fees</button>
+      <button class="admin-tab superadmin-only" id="tab-btn-rates" onclick="switchAdminTab('rates', this)">💱 Tasas y Fees</button>
+      <button class="admin-tab editor-only" id="tab-btn-myfees" onclick="switchAdminTab('myfees', this)" style="display:none;">🚚 Mis Fees</button>
       <button class="admin-tab" id="tab-btn-products" onclick="switchAdminTab('products', this)">📦 Gestionar Productos</button>
       <button class="admin-tab superadmin-only" id="tab-btn-users" onclick="switchAdminTab('users', this)" style="display:none;">👥 Usuarios</button>
     </div>
@@ -1298,7 +1388,7 @@ main {
     </div>
 
     <!-- TAB: TASAS Y FEES -->
-    <div class="admin-section" id="tab-rates">
+    <div class="admin-section superadmin-only" id="tab-rates" style="display:none;">
       <div style="color:#ccc; font-size:13px; margin-bottom:20px;">Define las tasas de cambio y los cargos adicionales que se aplican a cada pedido. Se muestran desglosados al cliente antes de pagar.</div>
 
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; margin-bottom:24px;">
@@ -1391,13 +1481,127 @@ main {
     <div class="admin-section" id="tab-products">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
         <div style="color:#ccc; font-size:13px;">Añade, edita o elimina productos. Las fotos se guardan en el navegador (base64).</div>
-        <button class="add-product-btn" onclick="addNewProduct()">
-          <i class="fas fa-plus"></i> Nuevo Producto
-        </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="add-product-btn" onclick="addNewProduct()">
+            <i class="fas fa-plus"></i> Nuevo Producto
+          </button>
+          <button class="add-product-btn" onclick="addComboProduct()" style="background:linear-gradient(135deg,#D62828,#F4A60D);">
+            🧺 Nuevo Combo
+          </button>
+        </div>
       </div>
       <div class="products-manager" id="productsManager"></div>
     </div>
 
+    <!-- TAB: MIS FEES (solo editores) -->
+    <div class="admin-section editor-only" id="tab-myfees" style="display:none;">
+      <div style="color:#ccc;font-size:13px;margin-bottom:16px;">Configura el fee de transportación para cada municipio de Las Tunas. Estos valores se aplicarán a los pedidos de tus productos.</div>
+      <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:18px;margin-bottom:16px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--gold);font-size:14px;margin-bottom:12px;">🏪 Nombre de mi Tienda (opcional)</div>
+        <div class="admin-field">
+          <label>Nombre de tienda (se muestra en lugar de tu nombre)</label>
+          <input type="text" id="mf-storename" placeholder="ej: Tienda El Progreso (opcional)">
+        </div>
+        <button class="admin-save" onclick="saveMyStoreName()" style="margin-top:8px;background:#1a4a2a;">💾 Guardar Nombre de Tienda</button>
+      </div>
+      <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:18px;margin-bottom:16px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--gold);font-size:14px;margin-bottom:16px;">🚚 Fee de Transportación por Municipio</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="flex:1;min-width:160px;font-size:13px;color:#ccc;">Las Tunas (ciudad)</span>
+            <select id="mf-type-0" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:110px;">
+              <option value="fixed">Fijo (USD)</option>
+              <option value="percent">% subtotal</option>
+              <option value="none">Sin cargo</option>
+            </select>
+            <input type="number" id="mf-val-0" min="0" step="0.01" placeholder="0.00" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:80px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="flex:1;min-width:160px;font-size:13px;color:#ccc;">Puerto Padre</span>
+            <select id="mf-type-1" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:110px;">
+              <option value="fixed">Fijo (USD)</option>
+              <option value="percent">% subtotal</option>
+              <option value="none">Sin cargo</option>
+            </select>
+            <input type="number" id="mf-val-1" min="0" step="0.01" placeholder="0.00" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:80px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="flex:1;min-width:160px;font-size:13px;color:#ccc;">Manatí</span>
+            <select id="mf-type-2" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:110px;">
+              <option value="fixed">Fijo (USD)</option>
+              <option value="percent">% subtotal</option>
+              <option value="none">Sin cargo</option>
+            </select>
+            <input type="number" id="mf-val-2" min="0" step="0.01" placeholder="0.00" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:80px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="flex:1;min-width:160px;font-size:13px;color:#ccc;">Jobabo</span>
+            <select id="mf-type-3" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:110px;">
+              <option value="fixed">Fijo (USD)</option>
+              <option value="percent">% subtotal</option>
+              <option value="none">Sin cargo</option>
+            </select>
+            <input type="number" id="mf-val-3" min="0" step="0.01" placeholder="0.00" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:80px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="flex:1;min-width:160px;font-size:13px;color:#ccc;">Colombia</span>
+            <select id="mf-type-4" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:110px;">
+              <option value="fixed">Fijo (USD)</option>
+              <option value="percent">% subtotal</option>
+              <option value="none">Sin cargo</option>
+            </select>
+            <input type="number" id="mf-val-4" min="0" step="0.01" placeholder="0.00" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:80px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="flex:1;min-width:160px;font-size:13px;color:#ccc;">Amancio</span>
+            <select id="mf-type-5" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:110px;">
+              <option value="fixed">Fijo (USD)</option>
+              <option value="percent">% subtotal</option>
+              <option value="none">Sin cargo</option>
+            </select>
+            <input type="number" id="mf-val-5" min="0" step="0.01" placeholder="0.00" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:80px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="flex:1;min-width:160px;font-size:13px;color:#ccc;">Jesús Menéndez</span>
+            <select id="mf-type-6" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:110px;">
+              <option value="fixed">Fijo (USD)</option>
+              <option value="percent">% subtotal</option>
+              <option value="none">Sin cargo</option>
+            </select>
+            <input type="number" id="mf-val-6" min="0" step="0.01" placeholder="0.00" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:80px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="flex:1;min-width:160px;font-size:13px;color:#ccc;">Majibacoa</span>
+            <select id="mf-type-7" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:110px;">
+              <option value="fixed">Fijo (USD)</option>
+              <option value="percent">% subtotal</option>
+              <option value="none">Sin cargo</option>
+            </select>
+            <input type="number" id="mf-val-7" min="0" step="0.01" placeholder="0.00" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px;width:80px;">
+          </div>
+      </div>
+      <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:18px;margin-bottom:16px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--gold);font-size:14px;margin-bottom:12px;">💱 Tasa de Cambio USD/CUP</div>
+        <div class="admin-field">
+          <label>Tasa USD → CUP (para tus productos)</label>
+          <input type="number" id="mf-rate-cup" min="1" step="1" placeholder="300">
+        </div>
+      </div>
+      <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:18px;margin-bottom:16px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--gold);font-size:14px;margin-bottom:12px;">🔐 Cambiar mi Contraseña</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="admin-field">
+            <label>Nueva contraseña</label>
+            <input type="password" id="mf-newpass" placeholder="••••••••" autocomplete="new-password">
+          </div>
+          <div class="admin-field">
+            <label>Confirmar contraseña</label>
+            <input type="password" id="mf-confirmpass" placeholder="••••••••" autocomplete="new-password">
+          </div>
+        </div>
+        <button class="admin-save" onclick="changeMyPassword()" style="margin-top:12px;background:#003F87;">🔑 Cambiar Contraseña</button>
+      </div>
+      <button class="admin-save" onclick="saveMyFees()">💾 Guardar Mis Fees</button>
+    </div>
     <!-- TAB: USUARIOS (solo superadmin) -->
     <div class="admin-section superadmin-only" id="tab-users" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
@@ -1478,7 +1682,7 @@ async function kvSet(key, value) {
 // ══════════════════════════════════════
 const DEFAULT_PRODUCTS = [
   { id:1, emoji:'📦', category:'Alimentos', name:'Combo Básico Mensual', desc:'Arroz, frijoles, aceite, azúcar y productos esenciales para un mes.', priceUSD:45, priceCUP:4500, stock:10, active:true, image:'' },
-  { id:2, emoji:'🧴', category:'Higiene', name:'Kit de Higiene Personal', desc:'Jabón, champú, pasta dental, desodorante y otros productos de aseo.', priceUSD:28, priceCUP:2800, stock:15, active:true, image:'' },
+  { id:2, emoji:'🧴', category:'Aseo e Higiene', name:'Kit de Higiene Personal', desc:'Jabón, champú, pasta dental, desodorante y otros productos de aseo.', priceUSD:28, priceCUP:2800, stock:15, active:true, image:'' },
   { id:3, emoji:'💊', category:'Medicamentos', name:'Botiquín Familiar', desc:'Analgésicos, antibióticos básicos, vitaminas y material de cura.', priceUSD:55, priceCUP:5500, stock:8, active:true, image:'' },
   { id:4, emoji:'👕', category:'Ropa', name:'Pack Ropa Adulto', desc:'Camisas, pantalones y ropa interior. Especifica talla al ordenar.', priceUSD:60, priceCUP:6000, stock:20, active:true, image:'' },
   { id:5, emoji:'🍼', category:'Bebé', name:'Kit Bebé Completo', desc:'Pañales, leche en polvo, ropa y artículos para bebé hasta 1 año.', priceUSD:75, priceCUP:7500, stock:5, active:true, image:'' },
@@ -1633,13 +1837,20 @@ function updateFeePreview() {
 }
 
 // ── Fee calculation helpers used throughout ──
-function calcFees(subtotalUSD) {
-  const transportType = config.feeTransportType || 'none';
-  const transportVal  = parseFloat(config.feeTransportVal) || 0;
-  const processType   = config.feeProcessType || 'none';
-  const processVal    = parseFloat(config.feeProcessVal) || 0;
-  const transportFee  = transportType === 'none' ? 0 : transportType === 'fixed' ? transportVal : subtotalUSD * transportVal / 100;
-  const processFee    = processType   === 'none' ? 0 : processType   === 'fixed' ? processVal   : subtotalUSD * processVal   / 100;
+function calcFees(subtotalUSD, municipio) {
+  // Fee de transporte: usar fee del proveedor por municipio si existe
+  let transportFee = 0;
+  if (municipio && cart.length > 0) {
+    transportFee = getTransportFeeForMunicipio(municipio);
+  } else {
+    const transportType = config.feeTransportType || 'none';
+    const transportVal  = parseFloat(config.feeTransportVal) || 0;
+    transportFee = transportType === 'none' ? 0 : transportType === 'fixed' ? transportVal : subtotalUSD * transportVal / 100;
+  }
+  // Fee de procesamiento: solo superadmin (config global)
+  const processType = config.feeProcessType || 'none';
+  const processVal  = parseFloat(config.feeProcessVal) || 0;
+  const processFee  = processType === 'none' ? 0 : processType === 'fixed' ? processVal : subtotalUSD * processVal / 100;
   return { transportFee, processFee, total: subtotalUSD + transportFee + processFee };
 }
 
@@ -1661,6 +1872,7 @@ function switchAdminTab(tab, btn) {
   btn.classList.add('active');
   if (tab === 'products') renderProductsManager();
   if (tab === 'rates') populateRatesFields();
+  if (tab === 'myfees') loadMyFees();
 }
 
 // ══════════════════════════════════════
@@ -1696,10 +1908,23 @@ function renderProductsManager() {
         <div class="pm-inline-field">
           <label>Categoría</label>
           <select id="pm-cat-${p.id}">
-            ${['Alimentos','Higiene','Medicamentos','Ropa','Bebé','Tecnología','Herramientas','Otro'].map(c =>
+            ${['Alimentos','Aseo e Higiene','Electrodomésticos','Medicamentos','Ropa y Calzado','Bebé','Tecnología','Herramientas','Combos','Otro'].map(c =>
               `<option value="${c}" ${p.category===c?'selected':''}>${c}</option>`
             ).join('')}
           </select>
+        </div>
+        <div class="pm-inline-field" style="background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:10px;">
+          <label style="color:#F4A60D;">⭐ Artículo en Oferta</label>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+              <input type="checkbox" id="pm-offer-${p.id}" ${p.isOffer?'checked':''} onchange="toggleOfferField(${p.id})" style="width:16px;height:16px;cursor:pointer;">
+              Marcar como oferta
+            </label>
+          </div>
+          <div id="pm-offer-label-wrap-${p.id}" style="margin-top:8px;${p.isOffer?'':'display:none;'}">
+            <label style="font-size:11px;color:#888;">Etiqueta de oferta (ej: -20%, 2x1, OFERTA)</label>
+            <input type="text" id="pm-offer-label-${p.id}" value="${escHtml(p.offerLabel||'OFERTA')}" placeholder="ej: -20%, 2x1, HOY SOLO" style="margin-top:4px;">
+          </div>
         </div>
         ${(function(){
           const cu = getCurrentUser();
@@ -1791,6 +2016,11 @@ function saveProduct(id) {
   p.priceUSD = parseFloat(document.getElementById(`pm-usd-${id}`).value) || 0;
   p.priceCUP = parseInt(document.getElementById(`pm-cup-${id}`).value) || 0;
   p.stock    = parseInt(document.getElementById(`pm-stock-${id}`).value) || 0;
+  const offerEl = document.getElementById(`pm-offer-${id}`);
+  if (offerEl) {
+    p.isOffer = offerEl.checked;
+    p.offerLabel = document.getElementById(`pm-offer-label-${id}`)?.value?.trim() || 'OFERTA';
+  }
   const supplierEl = document.getElementById(`pm-supplier-${id}`);
   if (supplierEl) p.supplierId = supplierEl.value ? parseInt(supplierEl.value) : null;
   saveProducts();
@@ -1853,9 +2083,25 @@ function addNewProduct() {
 // ══════════════════════════════════════
 // RENDER PRODUCTS
 // ══════════════════════════════════════
+let activeCategoryFilter = 'all';
+function filterByCategory(cat, btn) {
+  activeCategoryFilter = cat;
+  document.querySelectorAll('.cat-filter').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderProducts();
+}
+function toggleOfferField(id) {
+  const cb = document.getElementById('pm-offer-' + id);
+  const wrap = document.getElementById('pm-offer-label-wrap-' + id);
+  if (wrap) wrap.style.display = cb && cb.checked ? '' : 'none';
+}
 function renderProducts() {
   const grid = document.getElementById('productsGrid');
-  const visible = PRODUCTS.filter(p => p.active !== false && p.stock > 0);
+  const visible = PRODUCTS.filter(p => {
+    if (p.active === false || p.stock <= 0) return false;
+    if (activeCategoryFilter !== 'all' && p.category !== activeCategoryFilter) return false;
+    return true;
+  });
   if (visible.length === 0) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">No hay productos disponibles en este momento.</div>';
     return;
@@ -1867,9 +2113,17 @@ function renderProducts() {
     const stockBadge = p.stock <= 3
       ? `<div style="position:absolute;top:8px;right:8px;background:#D62828;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">¡Últimas ${p.stock}!</div>`
       : '';
+    const offerBadge = p.isOffer
+      ? `<div class="offer-star-shape">
+           <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+             <polygon points="32,2 38,22 58,22 43,35 49,55 32,42 15,55 21,35 6,22 26,22" fill="#D62828" stroke="#F4A60D" stroke-width="2"/>
+           </svg>
+           <div class="offer-star-text">${p.offerLabel||'OFERTA'}</div>
+         </div>`
+      : '';
     return `
-    <div class="product-card">
-      <div class="product-img" style="position:relative">${imgContent}${stockBadge}</div>
+    <div class="product-card" style="${p.isOffer?'border-color:#F4A60D;box-shadow:0 0 12px rgba(244,166,13,.3);':''}">
+      <div class="product-img" style="position:relative">${imgContent}${stockBadge}${offerBadge}</div>
       <div class="product-info">
         <div class="product-tag">${p.category}</div>
         <div class="product-name">${p.name}</div>
@@ -1943,7 +2197,8 @@ function getSupplierName(supplierId) {
   if (!supplierId) return 'Sin proveedor asignado';
   const users = getUsers();
   const u = users.find(x => x.id === supplierId);
-  return u ? u.name : 'Proveedor desconocido';
+  if (!u) return 'Proveedor desconocido';
+  return u.storeName || u.name; // Mostrar nombre de tienda si existe
 }
 function getSupplierWhatsApp(supplierId) {
   if (!supplierId) return null;
@@ -2021,7 +2276,8 @@ function renderCartModal() {
       <div class="order-summary">
         ${(() => {
           const sub = getCartTotal('usd');
-          const {transportFee, processFee, total} = calcFees(sub);
+          const municipioSel = document.getElementById('recipientMunicipio')?.value || '';
+          const {transportFee, processFee, total} = calcFees(sub, municipioSel);
           const tLabel = config.feeTransportLabel || 'Transportación';
           const pLabel = config.feeProcessLabel || 'Procesamiento';
           const tType  = config.feeTransportType || 'none';
@@ -2162,8 +2418,22 @@ function renderOrderForm() {
       </div>
       <div class="form-grid full" style="margin-top:10px">
         <div class="field">
+          <label>Municipio de entrega *</label>
+          <select id="recipientMunicipio" onchange="updateTransportFeeByMunicipio()" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:#fff;margin-bottom:8px;">
+            <option value="">— Selecciona el municipio —</option>
+            <option value="Las Tunas (ciudad)">Las Tunas (ciudad)</option>
+            <option value="Puerto Padre">Puerto Padre</option>
+            <option value="Manatí">Manatí</option>
+            <option value="Jobabo">Jobabo</option>
+            <option value="Colombia">Colombia</option>
+            <option value="Amancio">Amancio</option>
+            <option value="Jesús Menéndez">Jesús Menéndez</option>
+            <option value="Majibacoa">Majibacoa</option>
+          </select>
+        </div>
+        <div class="field">
           <label>Dirección de entrega completa *</label>
-          <textarea id="recipientAddress" placeholder="Calle, número, reparto, municipio de Las Tunas..."></textarea>
+          <textarea id="recipientAddress" placeholder="Calle, número, reparto..."></textarea>
         </div>
       </div>
     </div>
@@ -2229,10 +2499,11 @@ function submitOrder() {
   const name = document.getElementById('clientName')?.value?.trim();
   const email = document.getElementById('clientEmail')?.value?.trim();
   const recipientName = document.getElementById('recipientName')?.value?.trim();
+    const recipientMunicipio = document.getElementById('recipientMunicipio')?.value?.trim() || '';
   const recipientAddress = document.getElementById('recipientAddress')?.value?.trim();
-
   if (!name || !email) { showToast('⚠️ Completa tu nombre y email', 'error'); return; }
   if (!recipientName || !recipientAddress) { showToast('⚠️ Completa los datos del destinatario', 'error'); return; }
+  if (!recipientMunicipio) { showToast('⚠️ Selecciona el municipio de entrega', 'error'); return; }
   if (!selectedPayer) { showToast('⚠️ Selecciona quién va a pagar', 'error'); return; }
   if (!selectedPayment) { showToast('⚠️ Selecciona un método de pago', 'error'); return; }
 
@@ -2247,6 +2518,7 @@ function submitOrder() {
     clientCity: document.getElementById('clientCity')?.value || '',
     recipientName,
     recipientPhone: document.getElementById('recipientPhone')?.value || '',
+    recipientMunicipio,
     recipientAddress,
     notes: document.getElementById('orderNotes')?.value || '',
     payer: selectedPayer,
@@ -2420,6 +2692,7 @@ function buildWhatsAppMessage(order, supplierName) {
   lines.push('📦 *DESTINATARIO (quien recibe):*');
   lines.push('  • Nombre: ' + order.recipientName);
   if (order.recipientPhone) lines.push('  • Teléfono: ' + order.recipientPhone);
+  if (order.recipientMunicipio) lines.push('  • Municipio: ' + order.recipientMunicipio);
   lines.push('  • Dirección: ' + order.recipientAddress);
   lines.push('');
   lines.push('🛍️ *PRODUCTOS PEDIDOS:*');
@@ -2449,6 +2722,7 @@ function renderSuccess() {
         <strong>N° Pedido:</strong> ${order.id}<br>
         <strong>Cliente:</strong> ${order.clientName}<br>
         <strong>Destinatario:</strong> ${order.recipientName}<br>
+        ${order.recipientMunicipio ? `<strong>Municipio:</strong> ${order.recipientMunicipio}<br>` : ''}
         <strong>Dirección:</strong> ${order.recipientAddress}<br>
         <strong>Total:</strong> $${order.totalUSD} USD<br>
         <strong>Pago:</strong> ${getPaymentLabel(order.payment)}
@@ -2542,8 +2816,12 @@ function applyRoleUI() {
     if (pt) pt.classList.add('active');
     if (ps) ps.classList.add('active');
     ['tab-btn-config','tab-btn-rates'].forEach(id => { const el = document.getElementById(id); if(el) el.style.display='none'; });
+    // Mostrar tab Mis Fees para editores
+    document.querySelectorAll('.editor-only').forEach(el => el.style.display = '');
+    setTimeout(loadMyFees, 300);
   } else {
     document.querySelectorAll('.admin-tab').forEach(t => { if(!t.classList.contains('superadmin-only')) t.style.display=''; });
+    document.querySelectorAll('.editor-only').forEach(el => el.style.display = 'none');
   }
   const lb = document.getElementById('adminLogoutBtn');
   if (lb) { lb.textContent = (user.role==='superadmin'?'👑 ':'✏️ ')+user.name+' — Cerrar sesión'; lb.style.display='inline-block'; }
@@ -2698,6 +2976,135 @@ function saveUserWhatsApp(id) {
   saveUsers(users);
   showToast('✅ WhatsApp de "' + u.name + '" guardado', 'success');
 }
+// ══════════════════════════════════════
+// FEES POR MUNICIPIO (EDITOR)
+// ══════════════════════════════════════
+const MUNICIPIOS = ["Las Tunas (ciudad)", "Puerto Padre", "Manatí", "Jobabo", "Colombia", "Amancio", "Jesús Menéndez", "Majibacoa"];
+
+function loadMyFees() {
+  const user = getCurrentUser();
+  if (!user) return;
+  const users = getUsers();
+  const me = users.find(u => u.id === user.id);
+  if (!me) return;
+  // Nombre de tienda
+  const storeNameEl = document.getElementById('mf-storename');
+  if (storeNameEl) storeNameEl.value = me.storeName || '';
+  // Tasa CUP
+  const rateCupEl = document.getElementById('mf-rate-cup');
+  if (rateCupEl) rateCupEl.value = me.rateCup || config.rateUsdCup || 300;
+  // Fees por municipio
+  const fees = me.municipioFees || {};
+  MUNICIPIOS.forEach((m, i) => {
+    const fee = fees[m] || {type:'none', val:0};
+    const typeEl = document.getElementById('mf-type-' + i);
+    const valEl = document.getElementById('mf-val-' + i);
+    if (typeEl) typeEl.value = fee.type || 'none';
+    if (valEl) valEl.value = fee.val || 0;
+  });
+}
+
+function saveMyFees() {
+  const user = getCurrentUser();
+  if (!user) return;
+  const users = getUsers();
+  const me = users.find(u => u.id === user.id);
+  if (!me) return;
+  const fees = {};
+  MUNICIPIOS.forEach((m, i) => {
+    const type = document.getElementById('mf-type-' + i)?.value || 'none';
+    const val = parseFloat(document.getElementById('mf-val-' + i)?.value) || 0;
+    fees[m] = {type, val};
+  });
+  me.municipioFees = fees;
+  me.rateCup = parseFloat(document.getElementById('mf-rate-cup')?.value) || config.rateUsdCup || 300;
+  saveUsers(users);
+  showToast('✅ Fees guardados correctamente', 'success');
+}
+
+function saveMyStoreName() {
+  const user = getCurrentUser();
+  if (!user) return;
+  const users = getUsers();
+  const me = users.find(u => u.id === user.id);
+  if (!me) return;
+  me.storeName = document.getElementById('mf-storename')?.value?.trim() || '';
+  saveUsers(users);
+  showToast('✅ Nombre de tienda guardado: ' + (me.storeName || '(sin nombre, se usa tu nombre)'), 'success');
+}
+
+async function changeMyPassword() {
+  const newPass = document.getElementById('mf-newpass')?.value;
+  const confirmPass = document.getElementById('mf-confirmpass')?.value;
+  if (!newPass || !confirmPass) { showToast('⚠️ Completa ambos campos', 'error'); return; }
+  if (newPass !== confirmPass) { showToast('❌ Las contraseñas no coinciden', 'error'); return; }
+  if (newPass.length < 6) { showToast('⚠️ Mínimo 6 caracteres', 'error'); return; }
+  const user = getCurrentUser();
+  if (!user) return;
+  const users = getUsers();
+  const me = users.find(u => u.id === user.id);
+  if (!me) return;
+  me.passHash = await sha256(newPass);
+  saveUsers(users);
+  document.getElementById('mf-newpass').value = '';
+  document.getElementById('mf-confirmpass').value = '';
+  showToast('✅ Contraseña actualizada', 'success');
+}
+
+function updateTransportFeeByMunicipio() {
+  // Actualizar el resumen del pedido cuando cambia el municipio
+  const step = orderStep;
+  if (step === 'form' || step === 'cart') {
+    renderOrderModal();
+  }
+}
+
+function getTransportFeeForMunicipio(municipio) {
+  // Obtener el fee de transporte del proveedor para el municipio seleccionado
+  if (!cart.length) return 0;
+  const supplierId = cart[0].supplierId || null;
+  if (!supplierId) return calcFees(getCartTotal('usd')).transportFee;
+  const users = getUsers();
+  const supplier = users.find(u => u.id === supplierId);
+  if (!supplier || !supplier.municipioFees) return calcFees(getCartTotal('usd')).transportFee;
+  const fee = supplier.municipioFees[municipio];
+  if (!fee || fee.type === 'none') return 0;
+  const sub = getCartTotal('usd');
+  return fee.type === 'fixed' ? fee.val : sub * fee.val / 100;
+}
+
+// ══════════════════════════════════════
+// SISTEMA DE COMBOS
+// ══════════════════════════════════════
+function addComboProduct() {
+  const currentUser = getCurrentUser();
+  const supplierId = (currentUser && currentUser.role === 'editor') ? currentUser.id : null;
+  const newId = Date.now();
+  PRODUCTS.push({
+    id: newId,
+    emoji: '🧺',
+    category: 'Combos',
+    name: 'Nuevo Combo',
+    desc: 'Descripción del combo...',
+    priceUSD: 0,
+    priceCUP: 0,
+    stock: 0,
+    active: true,
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663040482601/EbpzDCICBZCVJhDF.png',
+    isCombo: true,
+    comboItems: [],
+    supplierId: supplierId,
+  });
+  saveProducts();
+  renderProductsManager();
+  renderProducts();
+  setTimeout(() => {
+    const card = document.getElementById('pmc-' + newId);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+  showToast('🧺 Nuevo combo creado. ¡Edita y guarda!', 'success');
+}
+
 // ══════════════════════════════════════
 // CAMBIO DE CREDENCIALES PROPIAS
 // ══════════════════════════════════════
