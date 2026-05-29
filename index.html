@@ -1916,18 +1916,18 @@ function renderProductsManager() {
   const catBar = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
     ${cats.map(c => `<button onclick="setPmCategoryFilter('${c}')" style="padding:5px 12px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;background:${_pmCategoryFilter===c?'#F4A60D':'#2a2a2a'};color:${_pmCategoryFilter===c?'#000':'#ccc'}">📂 ${c}</button>`).join('')}
   </div>`;
-  // Barra de filtro por proveedor (solo superadmin)
+  // Filtro por proveedor (solo superadmin) — lista desplegable
   let supplierBar = '';
   if (isSuperAdmin) {
     const users = getUsers();
     const editors = users.filter(u => u.role === 'editor' || u.role === 'superadmin');
-    const supplierOpts = ['Todos', ...editors.map(u => u.id)];
-    supplierBar = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-      ${supplierOpts.map(sid => {
-        const u = editors.find(x => x.id === sid);
-        const label = sid === 'Todos' ? '👥 Todos los proveedores' : '🏪 ' + (u ? (u.storeName || u.name) : sid);
-        return `<button onclick="setPmSupplierFilter('${sid}')" style="padding:5px 12px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;background:${_pmSupplierFilter===sid?'#003F87':'#2a2a2a'};color:${_pmSupplierFilter===sid?'#fff':'#ccc'}">${label}</button>`;
-      }).join('')}
+    const opts = editors.map(u => `<option value="${u.id}" ${_pmSupplierFilter===u.id?'selected':''}>${u.storeName || u.name} (@${u.username})</option>`).join('');
+    supplierBar = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <label style="color:#aaa;font-size:13px;white-space:nowrap;">&#127978; Proveedor:</label>
+      <select onchange="setPmSupplierFilter(this.value)" style="flex:1;padding:7px 12px;border-radius:8px;border:1px solid #444;background:#2a2a2a;color:#fff;font-size:13px;cursor:pointer;">
+        <option value="Todos" ${_pmSupplierFilter==='Todos'?'selected':''}>Todos los proveedores</option>
+        ${opts}
+      </select>
     </div>`;
   }
   const filterBar = `<div style="padding:12px;background:#1a1a1a;border-radius:10px;margin-bottom:18px;">
@@ -2775,42 +2775,68 @@ async function confirmPayment() {
   }
 }
 function buildWhatsAppMessage(order, supplierName) {
+  var cart_emoji = '\uD83D\uDED2';
+  var sparkle = '\u2728';
+  var bookmark = '\uD83D\uDD16';
+  var calendar = '\uD83D\uDDD3\uFE0F';
+  var line = '\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501';
+  var person = '\uD83D\uDC64';
+  var worker = '\uD83D\uDC68\u200D\uD83D\uDCBC';
+  var email_e = '\uD83D\uDCE7';
+  var phone = '\uD83D\uDCF1';
+  var box = '\uD83D\uDCE6';
+  var wave = '\uD83D\uDE4B';
+  var tel = '\uD83D\uDCDE';
+  var city = '\uD83C\uDFD9\uFE0F';
+  var home = '\uD83C\uDFE0';
+  var bag = '\uD83D\uDECD\uFE0F';
+  var diamond_s = '\uD83D\uDD39';
+  var money = '\uD83D\uDCB0';
+  var dollar = '\uD83D\uDCB5';
+  var truck = '\uD83D\uDE9A';
+  var gear = '\u2699\uFE0F';
+  var card = '\uD83D\uDCB3';
+  var gem = '\uD83D\uDC8E';
+  var note = '\uD83D\uDCDD';
+  var check = '\u2705';
+  var pray = '\uD83D\uDE4F';
+
   var lines = [];
-  lines.push('🛒✨ *NUEVO PEDIDO — Las Tunas Shop* ✨🛒');
+  lines.push(cart_emoji + sparkle + ' *NUEVO PEDIDO \u2014 Las Tunas Shop* ' + sparkle + cart_emoji);
   lines.push('');
-  lines.push('🔖 *N° Pedido:* ' + order.id);
-  lines.push('🗓️ *Fecha:* ' + new Date().toLocaleString('es-ES'));
+  lines.push(bookmark + ' *N\u00B0 Pedido:* ' + order.id);
+  lines.push(calendar + ' *Fecha:* ' + new Date().toLocaleString('es-ES'));
   lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('👤 *CLIENTE:*');
-  lines.push('  👨‍💼 Nombre: ' + order.clientName);
-  lines.push('  📧 Email: ' + order.clientEmail);
-  if (order.clientPhone) lines.push('  📱 Teléfono: ' + order.clientPhone);
+  lines.push(line);
+  lines.push(person + ' *CLIENTE:*');
+  lines.push('  ' + worker + ' Nombre: ' + order.clientName);
+  lines.push('  ' + email_e + ' Email: ' + order.clientEmail);
+  if (order.clientPhone) lines.push('  ' + phone + ' Tel\u00E9fono: ' + order.clientPhone);
   lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('📦 *DESTINATARIO (quien recibe):*');
-  lines.push('  🙋 Nombre: ' + order.recipientName);
-  if (order.recipientPhone) lines.push('  📞 Teléfono: ' + order.recipientPhone);
-  if (order.recipientMunicipio) lines.push('  🏙️ Municipio: ' + order.recipientMunicipio);
-  lines.push('  🏠 Dirección: ' + order.recipientAddress);
+  lines.push(line);
+  lines.push(box + ' *DESTINATARIO (quien recibe):*');
+  lines.push('  ' + wave + ' Nombre: ' + order.recipientName);
+  if (order.recipientPhone) lines.push('  ' + tel + ' Tel\u00E9fono: ' + order.recipientPhone);
+  if (order.recipientMunicipio) lines.push('  ' + city + ' Municipio: ' + order.recipientMunicipio);
+  lines.push('  ' + home + ' Direcci\u00F3n: ' + order.recipientAddress);
   lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('🛍️ *PRODUCTOS PEDIDOS:*');
-  order.items.split('\n').forEach(function(i){ if(i.trim()) lines.push('  🔹 ' + i); });
+  lines.push(line);
+  lines.push(bag + ' *PRODUCTOS PEDIDOS:*');
+  order.items.split('\n').forEach(function(i){ if(i.trim()) lines.push('  ' + diamond_s + ' ' + i); });
   lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('💰 *RESUMEN DE PAGO:*');
-  lines.push('  💵 Subtotal: $' + order.subtotalUSD + ' USD');
-  lines.push('  🚚 Transporte: $' + order.transportFee + ' USD');
-  lines.push('  ⚙️ Gestión: $' + order.processFee + ' USD');
-  lines.push('  💳 Método: ' + getPaymentLabel(order.payment));
+  lines.push(line);
+  lines.push(money + ' *RESUMEN DE PAGO:*');
+  lines.push('  ' + dollar + ' Subtotal: $' + order.subtotalUSD + ' USD');
+  lines.push('  ' + truck + ' Transporte: $' + order.transportFee + ' USD');
+  lines.push('  ' + gear + ' Gesti\u00F3n: $' + order.processFee + ' USD');
+  lines.push('  ' + card + ' M\u00E9todo: ' + getPaymentLabel(order.payment));
   lines.push('');
-  lines.push('  💎 *TOTAL: $' + order.totalUSD + ' USD*');
-  if (order.notes) { lines.push(''); lines.push('📝 *Notas:* ' + order.notes); }
+  lines.push('  ' + gem + ' *TOTAL: $' + order.totalUSD + ' USD*');
+  if (order.notes) { lines.push(''); lines.push(note + ' *Notas:* ' + order.notes); }
   lines.push('');
-  lines.push('━━━━━━━━━━━━━━━━━━━━━');
-  lines.push('✅ Por favor confirma recepción de este pedido.');
-  lines.push('🙏 ¡Gracias por tu atención!');
+  lines.push(line);
+  lines.push(check + ' Por favor confirma recepci\u00F3n de este pedido.');
+  lines.push(pray + ' \u00A1Gracias por tu atenci\u00F3n!');
   return lines.join('\n');
 }
 function renderSuccess() {
