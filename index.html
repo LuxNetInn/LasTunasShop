@@ -1234,12 +1234,12 @@ main {
 <!-- HERO -->
 <div class="hero">
   <h1><em>Las Tunas</em> y sus<br>Municipios</h1>
-  <p>Entregamos en Las Tunas y todos sus municipios. Paga desde EE.UU. con PayPal o USDT BEP-20, o desde Las Tunas con EnZona, Transfermóvil o efectivo.</p>
+  <p>Entregamos en Las Tunas y todos sus municipios. Paga desde EE.UU. con Zelle o USDT BEP-20, o desde Las Tunas con EnZona, Transfermóvil o efectivo.</p>
 </div>
 
 <!-- PAYMENT BADGES -->
 <div class="payment-badges">
-  <div class="badge paypal"><i class="fab fa-paypal"></i> PayPal</div>
+  <div class="badge paypal">🏦 Zelle</div>
   <div class="badge crypto">₮ USDT (BSC BEP-20)</div>
 
   <div class="badge cuba"><i class="fas fa-money-bill"></i> Efectivo</div>
@@ -2732,7 +2732,7 @@ function renderPaymentStep() {
         ← Volver
       </button>
       <button class="submit-btn" id="confirmPayBtn" onclick="confirmPayment()">
-        <i class="fas fa-check-circle"></i> He Realizado el Pago
+        <i class="fas fa-check-circle"></i> Confirmar Pedido
       </button>
     </div>
   `;
@@ -2760,9 +2760,9 @@ async function confirmPayment() {
   const order = window.currentOrder;
   const supplierId = cart.length > 0 ? (cart[0].supplierId || null) : null;
   const supplierName = getSupplierName(supplierId);
-  // Si el pagador es desde EE.UU., notificar al superadmin; si no, al proveedor
+  // Si el pagador es desde EE.UU. o paga con USDT, notificar al superadmin; si no, al proveedor
   let waNumber = null;
-  if (order.payer === 'usa') {
+  if (order.payer === 'usa' || order.payment === 'crypto') {
     const allUsers = getUsers();
     const superAdmin = allUsers.find(u => u.role === 'superadmin');
     waNumber = superAdmin && superAdmin.whatsapp ? superAdmin.whatsapp.replace(/[^0-9+]/g, '') : null;
