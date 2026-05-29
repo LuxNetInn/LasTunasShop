@@ -1879,37 +1879,63 @@ function switchAdminTab(tab, btn) {
 // PRODUCTS MANAGER
 // ══════════════════════════════════════
 let _pmCategoryFilter = 'Todos';
+let _pmSupplierFilter = 'Todos';
 
 function setPmCategoryFilter(cat) {
   _pmCategoryFilter = cat;
+  renderProductsManager();
+}
+function setPmSupplierFilter(suppId) {
+  _pmSupplierFilter = suppId;
   renderProductsManager();
 }
 
 function renderProductsManager() {
   const container = document.getElementById('productsManager');
   const currentUser = getCurrentUser();
+  const isSuperAdmin = currentUser && currentUser.role === 'superadmin';
   // Si es Editor, solo muestra sus propios productos
-  let visibleProducts = (currentUser && currentUser.role === 'editor')
+  let allVisible = (currentUser && currentUser.role === 'editor')
     ? PRODUCTS.filter(p => p.supplierId === currentUser.id)
     : PRODUCTS;
-  if (currentUser && currentUser.role === 'editor' && visibleProducts.length === 0) {
+  if (currentUser && currentUser.role === 'editor' && allVisible.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:14px;">📦 Aún no tienes productos asignados. Crea uno con el botón <strong>Nuevo Producto</strong>.</div>';
     return;
+  }
+  let visibleProducts = [...allVisible];
+  // Filtrar por proveedor (solo superadmin)
+  if (isSuperAdmin && _pmSupplierFilter !== 'Todos') {
+    visibleProducts = visibleProducts.filter(p => p.supplierId === _pmSupplierFilter);
   }
   // Filtrar por categoría
   if (_pmCategoryFilter && _pmCategoryFilter !== 'Todos') {
     visibleProducts = visibleProducts.filter(p => p.category === _pmCategoryFilter);
   }
-  // Obtener categorías únicas de los productos visibles (antes del filtro)
-  const allVisible = (currentUser && currentUser.role === 'editor')
-    ? PRODUCTS.filter(p => p.supplierId === currentUser.id)
-    : PRODUCTS;
+  // Barra de filtro por categoría
   const cats = ['Todos', ...new Set(allVisible.map(p => p.category).filter(Boolean))];
-  const filterBar = `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;padding:12px;background:#1a1a1a;border-radius:10px;">
-    ${cats.map(c => `<button onclick="setPmCategoryFilter('${c}')" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;background:${_pmCategoryFilter===c?'#F4A60D':'#2a2a2a'};color:${_pmCategoryFilter===c?'#000':'#ccc'}">${c}</button>`).join('')}
+  const catBar = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+    ${cats.map(c => `<button onclick="setPmCategoryFilter('${c}')" style="padding:5px 12px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;background:${_pmCategoryFilter===c?'#F4A60D':'#2a2a2a'};color:${_pmCategoryFilter===c?'#000':'#ccc'}">📂 ${c}</button>`).join('')}
+  </div>`;
+  // Barra de filtro por proveedor (solo superadmin)
+  let supplierBar = '';
+  if (isSuperAdmin) {
+    const users = getUsers();
+    const editors = users.filter(u => u.role === 'editor' || u.role === 'superadmin');
+    const supplierOpts = ['Todos', ...editors.map(u => u.id)];
+    supplierBar = `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+      ${supplierOpts.map(sid => {
+        const u = editors.find(x => x.id === sid);
+        const label = sid === 'Todos' ? '👥 Todos los proveedores' : '🏪 ' + (u ? (u.storeName || u.name) : sid);
+        return `<button onclick="setPmSupplierFilter('${sid}')" style="padding:5px 12px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;background:${_pmSupplierFilter===sid?'#003F87':'#2a2a2a'};color:${_pmSupplierFilter===sid?'#fff':'#ccc'}">${label}</button>`;
+      }).join('')}
+    </div>`;
+  }
+  const filterBar = `<div style="padding:12px;background:#1a1a1a;border-radius:10px;margin-bottom:18px;">
+    ${isSuperAdmin ? supplierBar : ''}
+    ${catBar}
   </div>`;
   if (visibleProducts.length === 0) {
-    container.innerHTML = filterBar + '<div style="text-align:center;padding:40px;color:#888;font-size:14px;">📦 No hay productos en esta categoría.</div>';
+    container.innerHTML = filterBar + '<div style="text-align:center;padding:40px;color:#888;font-size:14px;">📦 No hay productos con estos filtros.</div>';
     return;
   }
   container.innerHTML = filterBar + visibleProducts.map(p => `
