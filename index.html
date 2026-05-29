@@ -1234,7 +1234,7 @@ main {
 <!-- HERO -->
 <div class="hero">
   <h1><em>Las Tunas</em> y sus<br>Municipios</h1>
-  <p>Entregamos en Las Tunas y todos sus municipios. Paga desde EE.UU. con Zelle o USDT BEP-20, o desde Las Tunas con EnZona, Transfermóvil o efectivo.</p>
+  <p>Entregamos en Las Tunas y todos sus municipios. Paga desde EE.UU. con Zelle o USDT BEP-20, o desde Las Tunas con efectivo.</p>
 </div>
 
 <!-- PAYMENT BADGES -->
@@ -2810,49 +2810,32 @@ function buildWhatsAppMessage(order, supplierName) {
   var pray = '\uD83D\uDE4F';
 
   var lines = [];
-  lines.push(cart_emoji + sparkle + ' *NUEVO PEDIDO \u2014 Las Tunas Shop* ' + sparkle + cart_emoji);
-  lines.push('');
-  lines.push(bookmark + ' *N\u00B0 Pedido:* ' + order.id);
-  lines.push(calendar + ' *Fecha:* ' + new Date().toLocaleString('es-ES'));
-  lines.push('');
+  lines.push(cart_emoji + ' *NUEVO PEDIDO - Las Tunas Shop* ' + sparkle);
+  lines.push(bookmark + ' *#' + order.id.slice(-8) + '*  ' + calendar + ' ' + new Date().toLocaleDateString('es-ES'));
   lines.push(line);
-  lines.push(person + ' *CLIENTE:*');
-  lines.push('  ' + worker + ' Nombre: ' + order.clientName);
-  lines.push('  ' + email_e + ' Email: ' + order.clientEmail);
-  if (order.clientPhone) lines.push('  ' + phone + ' Tel\u00E9fono: ' + order.clientPhone);
-  lines.push('');
+  lines.push(person + ' *CLIENTE*');
+  lines.push(worker + ' ' + order.clientName + '  ' + phone + ' ' + (order.clientPhone || '-'));
+  lines.push(email_e + ' ' + order.clientEmail);
   lines.push(line);
-  lines.push(box + ' *DESTINATARIO (quien recibe):*');
-  lines.push('  ' + wave + ' Nombre: ' + order.recipientName);
-  if (order.recipientPhone) lines.push('  ' + tel + ' Tel\u00E9fono: ' + order.recipientPhone);
-  if (order.recipientMunicipio) lines.push('  ' + city + ' Municipio: ' + order.recipientMunicipio);
-  lines.push('  ' + home + ' Direcci\u00F3n: ' + order.recipientAddress);
-  lines.push('');
+  lines.push(box + ' *DESTINATARIO*');
+  lines.push(wave + ' ' + order.recipientName + '  ' + tel + ' ' + (order.recipientPhone || '-'));
+  lines.push(city + ' ' + (order.recipientMunicipio || '') + '  ' + home + ' ' + order.recipientAddress);
   lines.push(line);
-  // Incluir proveedor si hay nombre
   if (supplierName) {
-    lines.push(line);
     lines.push('🏪 *PROVEEDOR:* ' + supplierName);
-    lines.push('');
+    lines.push(line);
   }
-  lines.push(bag + ' *PRODUCTOS PEDIDOS:*');
-  order.items.split('\n').forEach(function(i){ if(i.trim()) lines.push('  ' + diamond_s + ' ' + i); });
-  lines.push('');
+  lines.push(bag + ' *PRODUCTOS*');
+  order.items.split('\n').forEach(function(i){ if(i.trim()) lines.push(diamond_s + ' ' + i.trim()); });
   lines.push(line);
-  lines.push(money + ' *RESUMEN DE PAGO:*');
-  lines.push('  ' + dollar + ' Subtotal: $' + order.subtotalUSD + ' USD');
-  lines.push('  ' + truck + ' Transporte: $' + order.transportFee + ' USD');
-  lines.push('  ' + gear + ' Gesti\u00F3n: $' + order.processFee + ' USD');
-  lines.push('  ' + card + ' M\u00E9todo: ' + getPaymentLabel(order.payment));
-  lines.push('');
-  lines.push('  ' + gem + ' *TOTAL: $' + order.totalUSD + ' USD*');
-  if (order.notes) { lines.push(''); lines.push(note + ' *Notas:* ' + order.notes); }
-  lines.push('');
+  lines.push(money + ' *PAGO*');
+  lines.push(dollar + ' Sub: $' + order.subtotalUSD + '  ' + truck + ' Env: $' + order.transportFee + '  ' + gear + ' Fee: $' + order.processFee);
+  lines.push(card + ' Método: ' + getPaymentLabel(order.payment));
+  lines.push(gem + ' *TOTAL: $' + order.totalUSD + ' USD*');
+  if (order.notes) { lines.push(line); lines.push(note + ' ' + order.notes); }
   lines.push(line);
-  lines.push(check + ' Por favor confirma recepci\u00F3n de este pedido.');
-  lines.push(pray + ' \u00A1Gracias por tu atenci\u00F3n!');
+  lines.push('✅ *Envía este mensaje para Terminar de Confirmar y recibir instrucciones finales* 😊');
   return lines.join('\n');
-}
 function renderSuccess() {
   const order = window.currentOrder;
   return `
@@ -2881,8 +2864,6 @@ function getPaymentLabel(p) {
   if (p === 'crypto') return 'USDT BEP-20';
   if (p === 'zelle') return 'Zelle';
   if (p === 'efectivo') return 'Efectivo';
-  if (p === 'enzona') return 'EnZona';
-  if (p === 'transfermovil') return 'Transfermóvil';
   return p || 'No especificado';
 }
 
