@@ -2426,7 +2426,7 @@ function renderOrderForm() {
         <div class="payer-option ${selectedPayer==='usa'?'selected':''}" onclick="selectPayer('usa')">
           <span class="flag">🇺🇸</span>
           <div class="label">Desde EE.UU.</div>
-          <div class="sublabel">PayPal · USDT BEP-20</div>
+          <div class="sublabel">Zelle · USDT BEP-20</div>
         </div>
         <div class="payer-option ${selectedPayer==='cuba'?'selected':''}" onclick="selectPayer('cuba')">
           <span class="flag">📍</span>
@@ -2442,11 +2442,11 @@ function renderOrderForm() {
       <div class="form-section-title">💳 Método de Pago</div>
       <div class="payment-methods">
         ${selectedPayer === 'usa' ? `
-          <div class="payment-method ${selectedPayment==='paypal'?'selected':''}" onclick="selectPayment('paypal')">
-            <div class="icon">🅿️</div>
+          <div class="payment-method ${selectedPayment==='zelle'?'selected':''}" onclick="selectPayment('zelle')">
+            <div class="icon">🏦</div>
             <div>
-              <div class="name">PayPal</div>
-              <div class="desc">Pago seguro en línea</div>
+              <div class="name">Zelle</div>
+              <div class="desc">Transferencia bancaria USA</div>
             </div>
           </div>
           <div class="payment-method ${selectedPayment==='crypto'?'selected':''}" onclick="selectPayment('crypto')">
@@ -2759,8 +2759,16 @@ async function confirmPayment() {
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando pedido...';
   const order = window.currentOrder;
   const supplierId = cart.length > 0 ? (cart[0].supplierId || null) : null;
-  const waNumber = getSupplierWhatsApp(supplierId);
   const supplierName = getSupplierName(supplierId);
+  // Si el pagador es desde EE.UU., notificar al superadmin; si no, al proveedor
+  let waNumber = null;
+  if (order.payer === 'usa') {
+    const allUsers = getUsers();
+    const superAdmin = allUsers.find(u => u.role === 'superadmin');
+    waNumber = superAdmin && superAdmin.whatsapp ? superAdmin.whatsapp.replace(/[^0-9+]/g, '') : null;
+  } else {
+    waNumber = getSupplierWhatsApp(supplierId);
+  }
   cart = [];
   updateCartCount();
   orderStep = 'success';
@@ -2821,6 +2829,12 @@ function buildWhatsAppMessage(order, supplierName) {
   lines.push('  ' + home + ' Direcci\u00F3n: ' + order.recipientAddress);
   lines.push('');
   lines.push(line);
+  // Incluir proveedor si hay nombre
+  if (supplierName) {
+    lines.push(line);
+    lines.push('🏪 *PROVEEDOR:* ' + supplierName);
+    lines.push('');
+  }
   lines.push(bag + ' *PRODUCTOS PEDIDOS:*');
   order.items.split('\n').forEach(function(i){ if(i.trim()) lines.push('  ' + diamond_s + ' ' + i); });
   lines.push('');
@@ -2863,13 +2877,14 @@ function renderSuccess() {
 }
 
 function getPaymentLabel(p) {
-  const labels = {
-    paypal: 'PayPal',
-    crypto: 'Criptomonedas',
-    transfer: 'Transferencia Bancaria',
-    transfer_cuba: 'Transferencia Cuba',
-    efectivo: 'Efectivo (al entregar)',
-  };
+  if (p === 'paypal') return 'PayPal';
+  if (p === 'crypto') return 'USDT BEP-20';
+  if (p === 'zelle') return 'Zelle';
+  if (p === 'efectivo') return 'Efectivo';
+  if (p === 'enzona') return 'EnZona';
+  if (p === 'transfermovil') return 'Transfermóvil';
+  return p || 'No especificado';
+};
   return labels[p] || p;
 }
 
