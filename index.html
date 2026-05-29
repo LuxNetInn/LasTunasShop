@@ -1878,18 +1878,41 @@ function switchAdminTab(tab, btn) {
 // ══════════════════════════════════════
 // PRODUCTS MANAGER
 // ══════════════════════════════════════
+let _pmCategoryFilter = 'Todos';
+
+function setPmCategoryFilter(cat) {
+  _pmCategoryFilter = cat;
+  renderProductsManager();
+}
+
 function renderProductsManager() {
   const container = document.getElementById('productsManager');
   const currentUser = getCurrentUser();
   // Si es Editor, solo muestra sus propios productos
-  const visibleProducts = (currentUser && currentUser.role === 'editor')
+  let visibleProducts = (currentUser && currentUser.role === 'editor')
     ? PRODUCTS.filter(p => p.supplierId === currentUser.id)
     : PRODUCTS;
   if (currentUser && currentUser.role === 'editor' && visibleProducts.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;font-size:14px;">📦 Aún no tienes productos asignados. Crea uno con el botón <strong>Nuevo Producto</strong>.</div>';
     return;
   }
-  container.innerHTML = visibleProducts.map(p => `
+  // Filtrar por categoría
+  if (_pmCategoryFilter && _pmCategoryFilter !== 'Todos') {
+    visibleProducts = visibleProducts.filter(p => p.category === _pmCategoryFilter);
+  }
+  // Obtener categorías únicas de los productos visibles (antes del filtro)
+  const allVisible = (currentUser && currentUser.role === 'editor')
+    ? PRODUCTS.filter(p => p.supplierId === currentUser.id)
+    : PRODUCTS;
+  const cats = ['Todos', ...new Set(allVisible.map(p => p.category).filter(Boolean))];
+  const filterBar = `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;padding:12px;background:#1a1a1a;border-radius:10px;">
+    ${cats.map(c => `<button onclick="setPmCategoryFilter('${c}')" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;background:${_pmCategoryFilter===c?'#F4A60D':'#2a2a2a'};color:${_pmCategoryFilter===c?'#000':'#ccc'}">${c}</button>`).join('')}
+  </div>`;
+  if (visibleProducts.length === 0) {
+    container.innerHTML = filterBar + '<div style="text-align:center;padding:40px;color:#888;font-size:14px;">📦 No hay productos en esta categoría.</div>';
+    return;
+  }
+  container.innerHTML = filterBar + visibleProducts.map(p => `
     <div class="pm-card" id="pmc-${p.id}">
       <div class="pm-card-img" onclick="triggerImageUpload(${p.id})">
         ${p.image
@@ -1945,11 +1968,19 @@ function renderProductsManager() {
         <div class="pm-price-row">
           <div class="pm-inline-field">
             <label>Precio USD ($)</label>
-            <input type="number" id="pm-usd-${p.id}" value="${p.priceUSD}" min="0" step="0.01">
+            <input type="number" id="pm-usd-${p.id}" value="${p.priceUSD}" min="0" step="0.01"
+              oninput="autoCalcCup(${p.id})">
           </div>
           <div class="pm-inline-field">
-            <label>Precio CUP</label>
+            <label style="display:flex;justify-content:space-between;align-items:center;">
+              <span>Precio CUP</span>
+              <button type="button" onclick="autoCalcCup(${p.id})" title="Calcular CUP automáticamente según tu tasa de cambio"
+                style="font-size:10px;padding:2px 8px;background:#2a2a2a;border:1px solid #F4A60D;color:#F4A60D;border-radius:12px;cursor:pointer;">
+                🔄 Auto
+              </button>
+            </label>
             <input type="number" id="pm-cup-${p.id}" value="${p.priceCUP}" min="0">
+            <span id="pm-cup-hint-${p.id}" style="font-size:11px;color:#888;margin-top:3px;display:block;"></span>
           </div>
         </div>
         <div class="pm-stock-row">
@@ -2004,6 +2035,29 @@ function handleImageUpload(id, input) {
     }
   };
   reader.readAsDataURL(file);
+}
+
+function getProviderRate() {
+  // Obtiene la tasa CUP del proveedor actual, o la global si no tiene
+  const user = getCurrentUser();
+  if (user) {
+    const users = getUsers();
+    const me = users.find(u => u.id === user.id);
+    if (me && me.rateCup) return parseFloat(me.rateCup);
+  }
+  return parseFloat(config.rateUsdCup) || 300;
+}
+
+function autoCalcCup(id) {
+  const usdInput = document.getElementById('pm-usd-' + id);
+  const cupInput = document.getElementById('pm-cup-' + id);
+  const hintEl = document.getElementById('pm-cup-hint-' + id);
+  if (!usdInput || !cupInput) return;
+  const usd = parseFloat(usdInput.value) || 0;
+  const rate = getProviderRate();
+  const cup = Math.round(usd * rate);
+  cupInput.value = cup;
+  if (hintEl) hintEl.textContent = usd > 0 ? `${usd} USD × ${rate} = ${cup.toLocaleString()} CUP` : '';
 }
 
 function saveProduct(id) {
@@ -2136,7 +2190,14 @@ function renderProducts() {
           </div>
           <div class="price-tag">
             <span class="flag">🇨🇺</span>
-            <span class="amount">${p.priceCUP.toLocaleString()}</span>
+            <span class="amount">${(function(){
+              if (p.priceCUP && p.priceCUP > 0) return p.priceCUP.toLocaleString();
+              // Calcular desde tasa del proveedor
+              const users = getUsers();
+              const supplier = users.find(u => u.id === p.supplierId);
+              const rate = (supplier && supplier.rateCup) ? parseFloat(supplier.rateCup) : (parseFloat(config.rateUsdCup) || 300);
+              return Math.round(p.priceUSD * rate).toLocaleString();
+            })()}</span>
             <span class="currency">CUP</span>
           </div>
         </div>
@@ -2181,7 +2242,7 @@ function addToCart(id) {
   if (existing) {
     existing.qty += qty;
   } else {
-    cart.push({ ...product, qty });
+    cart.push({ ...product, qty, supplierId: product.supplierId || null });
   }
   updateCartCount();
   const btn = document.getElementById(`addbtn-${id}`);
@@ -2234,7 +2295,18 @@ function removeFromCart(id) {
 }
 
 function getCartTotal(currency) {
-  return cart.reduce((s, i) => s + (currency === 'usd' ? i.priceUSD : i.priceCUP) * i.qty, 0);
+  return cart.reduce((s, i) => {
+    if (currency === 'usd') return s + i.priceUSD * i.qty;
+    // CUP: usar priceCUP guardado, o calcular desde tasa del proveedor
+    let cup = i.priceCUP;
+    if (!cup || cup === 0) {
+      const users = getUsers();
+      const supplier = users.find(u => u.id === i.supplierId);
+      const rate = (supplier && supplier.rateCup) ? parseFloat(supplier.rateCup) : (parseFloat(config.rateUsdCup) || 300);
+      cup = Math.round(i.priceUSD * rate);
+    }
+    return s + cup * i.qty;
+  }, 0);
 }
 
 function renderCartModal() {
