@@ -2128,8 +2128,8 @@ function saveProduct(id) {
   const supplierEl = document.getElementById(`pm-supplier-${id}`);
   if (supplierEl) p.supplierId = supplierEl.value ? parseInt(supplierEl.value) : null;
   saveProducts();
+  _patchProductCard(id);
   renderProducts();
-  renderProductsManager();
   showToast(`✅ "${p.name}" guardado`, 'success');
 }
 
@@ -2139,7 +2139,8 @@ function toggleProductActive(id) {
   p.active = p.active === false ? true : false;
   saveProducts();
   renderProducts();
-  renderProductsManager();
+  const toggleBtn = document.querySelector(`#pmc-${id} .pm-btn.toggle`);
+  if (toggleBtn) toggleBtn.textContent = p.active === false ? '👁 Mostrar' : '🚫 Ocultar';
   showToast(`${p.active ? '👁 Producto visible' : '🚫 Producto oculto'}`, 'success');
 }
 
@@ -2151,7 +2152,8 @@ function deleteProduct(id) {
   PRODUCTS.splice(idx, 1);
   saveProducts();
   renderProducts();
-  renderProductsManager();
+  const delCard = document.getElementById(`pmc-${id}`);
+  if (delCard) delCard.remove();
   showToast('🗑️ Producto eliminado', 'success');
 }
 
@@ -2174,13 +2176,15 @@ function addNewProduct() {
     supplierId: supplierId,
   });
   saveProducts();
-  renderProductsManager();
   renderProducts();
-  // Scroll to the new card
-  setTimeout(() => {
-    const card = document.getElementById(`pmc-${newId}`);
-    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 100);
+  // Re-renderizar el manager y hacer scroll a la nueva tarjeta
+  requestAnimationFrame(() => {
+    renderProductsManager();
+    setTimeout(() => {
+      const card = document.getElementById(`pmc-${newId}`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  });
   showToast('➕ Nuevo producto creado. ¡Edita y guarda!', 'success');
 }
 
@@ -2198,6 +2202,31 @@ function toggleOfferField(id) {
   const cb = document.getElementById('pm-offer-' + id);
   const wrap = document.getElementById('pm-offer-label-wrap-' + id);
   if (wrap) wrap.style.display = cb && cb.checked ? '' : 'none';
+}
+
+// Actualiza quirúrgicamente una tarjeta del panel sin re-renderizar todo
+function _patchProductCard(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  const card = document.getElementById('pmc-' + id);
+  if (!card) return;
+  // Actualizar nombre en el label si existe
+  const nameInput = document.getElementById('pm-name-' + id);
+  // Actualizar badge de oferta en la imagen
+  const imgDiv = card.querySelector('.pm-card-img');
+  if (imgDiv) {
+    let badge = imgDiv.querySelector('.offer-star-shape');
+    if (p.isOffer) {
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'offer-star-shape';
+        imgDiv.appendChild(badge);
+      }
+      badge.innerHTML = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><polygon points="32,2 38,22 58,22 43,35 49,55 32,42 15,55 21,35 6,22 26,22" fill="#D62828" stroke="#F4A60D" stroke-width="2"/></svg><div class="offer-star-text">${p.offerLabel||'OFERTA'}</div>`;
+    } else {
+      if (badge) badge.remove();
+    }
+  }
 }
 function renderProducts() {
   const scrollY = window.scrollY; // Preservar posición del scroll
