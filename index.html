@@ -2079,8 +2079,22 @@ function handleImageUpload(id, input) {
     if (p) {
       p.image = e.target.result;
       saveProducts();
-      renderProductsManager();
-      renderProducts();
+      // Actualizar imagen en la tarjeta del manager sin re-render completo
+      const imgDiv = document.querySelector('#pmc-' + id + ' .pm-card-img');
+      if (imgDiv) {
+        const existingBadge = imgDiv.querySelector('.offer-star-shape');
+        imgDiv.innerHTML = '<img src="' + e.target.result + '" alt="' + p.name + '">';
+        if (existingBadge) imgDiv.appendChild(existingBadge);
+      }
+      // Actualizar imagen en la grilla publica sin re-render completo
+      const pubImgDiv = document.querySelector('.product-card:has(button[onclick="addToCart(' + id + ')"])  .product-img');
+      if (pubImgDiv) {
+        const existingBadges = pubImgDiv.querySelectorAll('[style*="position:absolute"], .offer-star-shape');
+        pubImgDiv.innerHTML = '<img src="' + e.target.result + '" alt="' + p.name + '" style="width:100%;height:100%;object-fit:cover;">';
+        existingBadges.forEach(b => pubImgDiv.appendChild(b));
+      } else {
+        renderProducts();
+      }
       showToast('🖼️ Foto actualizada', 'success');
     }
   };
@@ -2210,8 +2224,6 @@ function _patchProductCard(id) {
   if (!p) return;
   const card = document.getElementById('pmc-' + id);
   if (!card) return;
-  // Actualizar nombre en el label si existe
-  const nameInput = document.getElementById('pm-name-' + id);
   // Actualizar badge de oferta en la imagen
   const imgDiv = card.querySelector('.pm-card-img');
   if (imgDiv) {
@@ -2225,6 +2237,20 @@ function _patchProductCard(id) {
       badge.innerHTML = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><polygon points="32,2 38,22 58,22 43,35 49,55 32,42 15,55 21,35 6,22 26,22" fill="#D62828" stroke="#F4A60D" stroke-width="2"/></svg><div class="offer-star-text">${p.offerLabel||'OFERTA'}</div>`;
     } else {
       if (badge) badge.remove();
+    }
+  }
+  // Actualizar badge de stock/disponibilidad
+  const stockBadge = document.getElementById('pm-badge-' + id);
+  if (stockBadge) {
+    if (p.active === false) {
+      stockBadge.className = 'pm-stock-badge outstock';
+      stockBadge.textContent = 'Oculto';
+    } else if (p.stock > 0) {
+      stockBadge.className = 'pm-stock-badge instock';
+      stockBadge.textContent = 'Disponible';
+    } else {
+      stockBadge.className = 'pm-stock-badge outstock';
+      stockBadge.textContent = 'Agotado';
     }
   }
 }
@@ -3027,7 +3053,7 @@ async function adminDoLogin() {
     panel.classList.add('open'); arrow.textContent='▲';
     applyRoleUI();
     if (found.role==='superadmin') { populateAdminFields(); populateRatesFields(); }
-    renderProductManager();
+    renderProductsManager();
     errEl.classList.remove('show');
     showToast('✅ Bienvenido, '+found.name, 'success');
   } else {
@@ -3057,7 +3083,7 @@ function toggleAdmin() {
   if (panel.classList.contains('open')) {
     applyRoleUI();
     if(isSuperAdmin()){populateAdminFields();populateRatesFields();}
-    renderProductManager();
+    renderProductsManager();
   }
 }
 document.getElementById('adminLoginOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');});
@@ -3091,8 +3117,36 @@ async function createUser(){
   if(users.find(u=>u.username===username)){showToast('❌ Ese nombre de usuario ya existe','error');return;}
   const userHash=await sha256(username); const passHash=await sha256(pass);
   const newId=users.length>0?Math.max(...users.map(u=>u.id))+1:1;
-  users.push({id:newId,name,username,userHash,passHash,role,createdAt:new Date().toISOString()});
-  saveUsers(users); renderUsersList(); toggleAddUserForm();
+  const newUser={id:newId,name,username,userHash,passHash,role,createdAt:new Date().toISOString()};
+  users.push(newUser);
+  saveUsers(users);
+  // Agregar tarjeta al DOM sin re-render completo
+  const usersContainer=document.getElementById('usersList');
+  if(usersContainer){
+    const div=document.createElement('div');
+    div.className='user-card';
+    div.id='ucard-'+newId;
+    div.innerHTML=`
+      <div class="user-card-info">
+        <div class="user-card-name">${name} <span style="font-size:12px;color:#666;">@${username}</span></div>
+        <span class="user-role-badge ${role}">${role==='superadmin'?'👑 Super Admin':'✏️ Editor'}</span>
+        <span style="font-size:11px;color:#555;margin-left:8px;">Creado: ${new Date().toLocaleDateString('es-ES')}</span>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:#888;">📱 WhatsApp:</span>
+          <input type="text" id="wa-${newId}" value="" placeholder="+1 305 555 1234"
+            style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;width:180px;"
+            onchange="updateUserWhatsApp(${newId}, this.value)">
+          <button class="user-action-btn edit" onclick="saveUserWhatsApp(${newId})" style="padding:4px 10px;font-size:11px;">💾 Guardar</button>
+        </div>
+      </div>
+      <div class="user-card-actions">
+        <button class="user-action-btn edit" onclick="resetUserPassword(${newId})">🔑 Cambiar clave</button>
+        <button class="user-action-btn delete" onclick="deleteUser(${newId})">🗑️ Eliminar</button>
+      </div>
+    `;
+    usersContainer.appendChild(div);
+  }
+  toggleAddUserForm();
   showToast('✅ Usuario "'+name+'" creado correctamente','success');
 }
 async function deleteUser(id){
@@ -3102,7 +3156,14 @@ async function deleteUser(id){
   const user=users.find(u=>u.id===id);
   if(!user)return;
   if(!confirm('¿Eliminar al usuario "'+user.name+'"?'))return;
-  users=users.filter(u=>u.id!==id); saveUsers(users); renderUsersList();
+  users=users.filter(u=>u.id!==id); saveUsers(users);
+  // Eliminar tarjeta del DOM sin re-render completo
+  const ucardEl=document.getElementById('ucard-'+id);
+  if(ucardEl){
+    ucardEl.style.transition='opacity 0.2s';
+    ucardEl.style.opacity='0';
+    setTimeout(()=>ucardEl.remove(),200);
+  } else { renderUsersList(); }
   showToast('🗑️ Usuario "'+user.name+'" eliminado','success');
 }
 async function resetUserPassword(id){
@@ -3119,7 +3180,7 @@ function renderUsersList(){
   if(!container)return;
   const users=getUsers(); const current=getCurrentUser();
   container.innerHTML=users.map(u=>`
-    <div class="user-card">
+    <div class="user-card" id="ucard-${u.id}">
       <div class="user-card-info">
         <div class="user-card-name">${u.name} <span style="font-size:12px;color:#666;">@${u.username}</span></div>
         <span class="user-role-badge ${u.role}">${u.role==='superadmin'?'👑 Super Admin':'✏️ Editor'}</span>
@@ -3274,12 +3335,14 @@ function addComboProduct() {
     supplierId: supplierId,
   });
   saveProducts();
-  renderProductsManager();
   renderProducts();
-  setTimeout(() => {
-    const card = document.getElementById('pmc-' + newId);
-    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 100);
+  requestAnimationFrame(() => {
+    renderProductsManager();
+    setTimeout(() => {
+      const card = document.getElementById('pmc-' + newId);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
+  });
   showToast('🧺 Nuevo combo creado. ¡Edita y guarda!', 'success');
 }
 
@@ -3335,7 +3398,7 @@ initDefaultUsers();
           if (arrow) arrow.textContent = '▲';
           applyRoleUI();
           if (isSuperAdmin()) { populateAdminFields(); populateRatesFields(); }
-          renderProductManager();
+          renderProductsManager();
         }
       } else {
         // Mostrar login
