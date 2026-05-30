@@ -2185,6 +2185,7 @@ function toggleOfferField(id) {
   if (wrap) wrap.style.display = cb && cb.checked ? '' : 'none';
 }
 function renderProducts() {
+  const scrollY = window.scrollY; // Preservar posición del scroll
   const grid = document.getElementById('productsGrid');
   const visible = PRODUCTS.filter(p => {
     if (p.active === false || p.stock <= 0) return false;
@@ -2249,9 +2250,10 @@ function renderProducts() {
         </button>
       </div>
     </div>
-  `}).join('');
+    `}).join('');
+  // Restaurar posición del scroll para no saltar al inicio de la página
+  requestAnimationFrame(() => window.scrollTo({ top: scrollY, behavior: 'instant' }));
 }
-
 const productQtys = {};
 PRODUCTS.forEach(p => productQtys[p.id] = 1);
 
