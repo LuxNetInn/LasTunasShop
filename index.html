@@ -1701,28 +1701,43 @@ const DEFAULT_PRODUCTS = [
 ];
 
 function loadProducts() {
-  // Carga desde localStorage como caché local (se sincroniza con KV al iniciar)
+  // Si ya se sincronizó con KV antes, usar localStorage (datos reales)
   const saved = localStorage.getItem('cubashop_products');
-  return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+  const synced = localStorage.getItem('cubashop_kv_synced');
+  if (saved && synced) return JSON.parse(saved);
+  // Primera vez o sin sincronizar: mostrar vacío hasta que llegue KV
+  if (saved && synced === null) return JSON.parse(saved);
+  return []; // Vacío hasta sincronizar con KV
 }
 function saveProducts() {
   localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-  kvSet('products', PRODUCTS); // Sincronizar con KV
+  // Sincronizar con KV en background (fire-and-forget, no bloquea la UI)
+  setTimeout(() => kvSet('products', PRODUCTS), 0);
 }
 let PRODUCTS = loadProducts();
-// Sincronizar datos desde KV al cargar la página
-kvGet('products').then(function(data) {
-  if (data && Array.isArray(data)) {
-    PRODUCTS = data;
+// Sincronizar datos desde KV al cargar la página (en paralelo para máxima velocidad)
+Promise.all([
+  kvGet('products'),
+  kvGet('config')
+]).then(function([prodData, confData]) {
+  let needsRender = false;
+  if (prodData && Array.isArray(prodData)) {
+    PRODUCTS = prodData;
     localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-    renderProducts();
+    localStorage.setItem('cubashop_kv_synced', '1');
+    needsRender = true;
+  } else if (!localStorage.getItem('cubashop_kv_synced')) {
+    // Sin datos en KV y sin sincronización previa: usar DEFAULT_PRODUCTS
+    PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+    localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+    localStorage.setItem('cubashop_kv_synced', '1');
+    needsRender = true;
   }
-});
-kvGet('config').then(function(data) {
-  if (data && typeof data === 'object') {
-    config = Object.assign(config, data);
+  if (confData && typeof confData === 'object') {
+    config = Object.assign(config, confData);
     localStorage.setItem('cubashop_config', JSON.stringify(config));
   }
+  if (needsRender) renderProducts();
 });
 
 // ══════════════════════════════════════
@@ -2928,7 +2943,7 @@ async function initDefaultUsers() {
 function getUsers() { return JSON.parse(localStorage.getItem('cubashop_users') || '[]'); }
 function saveUsers(users) {
   localStorage.setItem('cubashop_users', JSON.stringify(users));
-  kvSet('users', users); // Sincronizar con KV
+  setTimeout(() => kvSet('users', users), 0);
 }
 function getCurrentUser() {
   const data = sessionStorage.getItem('adminSession');
@@ -3264,7 +3279,13 @@ async function changeAdminCredentials(){
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
-renderProducts();
+// Mostrar spinner si no hay datos sincronizados aún
+if (!localStorage.getItem('cubashop_kv_synced') || PRODUCTS.length === 0) {
+  const grid = document.getElementById('productsGrid');
+  if (grid) grid.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#888;"><div style="font-size:32px;margin-bottom:12px;">⏳</div><p style="font-size:14px;">Cargando productos...</p></div>';
+} else {
+  renderProducts();
+}
 populateAdminFields();
 initDefaultUsers();
 
