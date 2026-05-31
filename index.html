@@ -1710,7 +1710,9 @@ function loadProducts() {
   return []; // Vacío hasta sincronizar con KV
 }
 function saveProducts() {
+  const ts = Date.now();
   localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+  localStorage.setItem('cubashop_local_ts', String(ts));
   // Sincronizar con KV en background (fire-and-forget, no bloquea la UI)
   setTimeout(() => kvSet('products', PRODUCTS), 0);
 }
@@ -1722,10 +1724,19 @@ Promise.all([
 ]).then(function([prodData, confData]) {
   let needsRender = false;
   if (prodData && Array.isArray(prodData)) {
-    PRODUCTS = prodData;
-    localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-    localStorage.setItem('cubashop_kv_synced', '1');
-    needsRender = true;
+    // Solo sobreescribir si KV tiene datos y NO hay cambios locales más recientes
+    const localTs = parseInt(localStorage.getItem('cubashop_local_ts') || '0', 10);
+    const kvTs = (prodData._ts && typeof prodData._ts === 'number') ? prodData._ts : 0;
+    const hasLocalChanges = localTs > 0 && (kvTs === 0 || localTs > kvTs);
+    if (!hasLocalChanges) {
+      PRODUCTS = prodData;
+      localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+      localStorage.setItem('cubashop_kv_synced', '1');
+      needsRender = true;
+    } else {
+      // Hay cambios locales más recientes — no sobreescribir, solo marcar synced
+      localStorage.setItem('cubashop_kv_synced', '1');
+    }
   } else if (!localStorage.getItem('cubashop_kv_synced')) {
     // Sin datos en KV y sin sincronización previa: usar DEFAULT_PRODUCTS
     PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
@@ -2069,8 +2080,8 @@ function triggerImageUpload(id) {
 function handleImageUpload(id, input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 2 * 1024 * 1024) {
-    showToast('⚠️ La imagen no debe superar 2MB', 'error');
+  if (file.size > 500 * 1024) {
+    showToast('⚠️ La imagen no debe superar 500KB', 'error');
     return;
   }
   const reader = new FileReader();
@@ -2184,7 +2195,7 @@ function addNewProduct() {
     desc: 'Descripción del producto...',
     priceUSD: 0,
     priceCUP: 0,
-    stock: 0,
+    stock: 1,
     active: true,
     image: '',
     supplierId: supplierId,
@@ -3327,7 +3338,7 @@ function addComboProduct() {
     desc: 'Descripción del combo...',
     priceUSD: 0,
     priceCUP: 0,
-    stock: 0,
+    stock: 1,
     active: true,
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663040482601/EbpzDCICBZCVJhDF.png',
     isCombo: true,
