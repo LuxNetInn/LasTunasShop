@@ -1714,7 +1714,7 @@ async function saveProducts() {
   } catch(e) {
     console.error('KV sync error:', e);
     showToast('⚠️ Guardado solo localmente. Verifica tu conexión.', 'error');
-    return false;
+    return true;
   }
 }
 let PRODUCTS = loadProducts();
