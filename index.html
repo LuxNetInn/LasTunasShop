@@ -1700,56 +1700,46 @@ const DEFAULT_PRODUCTS = [
   { id:8, emoji:'🍗', category:'Alimentos', name:'Pack Proteínas', desc:'Pollo, carne de res y atún en lata para una familia por dos semanas.', priceUSD:50, priceCUP:5000, stock:7, active:true, image:'' },
 ];
 
+// ── Productos: localStorage es la fuente de verdad ──────────────────────────
+// KV solo se consulta si localStorage está vacío (primer uso en navegador nuevo)
 function loadProducts() {
-  // Si ya se sincronizó con KV antes, usar localStorage (datos reales)
   const saved = localStorage.getItem('cubashop_products');
-  const synced = localStorage.getItem('cubashop_kv_synced');
-  if (saved && synced) return JSON.parse(saved);
-  // Primera vez o sin sincronizar: mostrar vacío hasta que llegue KV
-  if (saved && synced === null) return JSON.parse(saved);
-  return []; // Vacío hasta sincronizar con KV
+  return saved ? JSON.parse(saved) : null;
 }
 function saveProducts() {
-  const ts = Date.now();
   localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-  localStorage.setItem('cubashop_local_ts', String(ts));
-  // Sincronizar con KV en background (fire-and-forget, no bloquea la UI)
-  setTimeout(() => kvSet('products', PRODUCTS), 0);
+  // Sync con KV en background, sin bloquear la UI
+  clearTimeout(window._kvSyncTimer);
+  window._kvSyncTimer = setTimeout(() => kvSet('products', PRODUCTS), 500);
 }
 let PRODUCTS = loadProducts();
-// Sincronizar datos desde KV al cargar la página (en paralelo para máxima velocidad)
-Promise.all([
-  kvGet('products'),
-  kvGet('config')
-]).then(function([prodData, confData]) {
-  let needsRender = false;
-  if (prodData && Array.isArray(prodData)) {
-    // Solo sobreescribir si KV tiene datos y NO hay cambios locales más recientes
-    const localTs = parseInt(localStorage.getItem('cubashop_local_ts') || '0', 10);
-    const kvTs = (prodData._ts && typeof prodData._ts === 'number') ? prodData._ts : 0;
-    const hasLocalChanges = localTs > 0 && (kvTs === 0 || localTs > kvTs);
-    if (!hasLocalChanges) {
+// Si no hay datos locales, cargar desde KV (primer uso o navegador limpio)
+if (!PRODUCTS) {
+  PRODUCTS = [];
+  const grid = document.getElementById('productsGrid');
+  if (grid) grid.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#888;"><div style="font-size:32px;margin-bottom:12px;">⏳</div><p style="font-size:14px;">Cargando productos...</p></div>';
+  Promise.all([kvGet('products'), kvGet('config')]).then(function([prodData, confData]) {
+    if (prodData && Array.isArray(prodData) && prodData.length > 0) {
       PRODUCTS = prodData;
-      localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-      localStorage.setItem('cubashop_kv_synced', '1');
-      needsRender = true;
     } else {
-      // Hay cambios locales más recientes — no sobreescribir, solo marcar synced
-      localStorage.setItem('cubashop_kv_synced', '1');
+      PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
     }
-  } else if (!localStorage.getItem('cubashop_kv_synced')) {
-    // Sin datos en KV y sin sincronización previa: usar DEFAULT_PRODUCTS
-    PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
     localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-    localStorage.setItem('cubashop_kv_synced', '1');
-    needsRender = true;
-  }
-  if (confData && typeof confData === 'object') {
-    config = Object.assign(config, confData);
-    localStorage.setItem('cubashop_config', JSON.stringify(config));
-  }
-  if (needsRender) renderProducts();
-});
+    if (confData && typeof confData === 'object') {
+      config = Object.assign(config, confData);
+      localStorage.setItem('cubashop_config', JSON.stringify(config));
+    }
+    renderProducts();
+  });
+} else {
+  // Hay datos locales: renderizar de inmediato, luego sync config en background
+  kvGet('config').then(function(confData) {
+    if (confData && typeof confData === 'object') {
+      config = Object.assign(config, confData);
+      localStorage.setItem('cubashop_config', JSON.stringify(config));
+    }
+  });
+}
 
 // ══════════════════════════════════════
 // ESTADO
@@ -2176,9 +2166,13 @@ function deleteProduct(id) {
   const idx = PRODUCTS.indexOf(p);
   PRODUCTS.splice(idx, 1);
   saveProducts();
-  renderProducts();
   const delCard = document.getElementById(`pmc-${id}`);
-  if (delCard) delCard.remove();
+  if (delCard) {
+    delCard.style.transition = 'opacity 0.15s';
+    delCard.style.opacity = '0';
+    setTimeout(() => delCard.remove(), 150);
+  }
+  renderProducts();
   showToast('🗑️ Producto eliminado', 'success');
 }
 
@@ -2202,13 +2196,10 @@ function addNewProduct() {
   });
   saveProducts();
   renderProducts();
-  // Re-renderizar el manager y hacer scroll a la nueva tarjeta
+  renderProductsManager();
   requestAnimationFrame(() => {
-    renderProductsManager();
-    setTimeout(() => {
-      const card = document.getElementById(`pmc-${newId}`);
-      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 50);
+    const card = document.getElementById(`pmc-${newId}`);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
   showToast('➕ Nuevo producto creado. ¡Edita y guarda!', 'success');
 }
@@ -3347,12 +3338,10 @@ function addComboProduct() {
   });
   saveProducts();
   renderProducts();
+  renderProductsManager();
   requestAnimationFrame(() => {
-    renderProductsManager();
-    setTimeout(() => {
-      const card = document.getElementById('pmc-' + newId);
-      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 50);
+    const card = document.getElementById('pmc-' + newId);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
   showToast('🧺 Nuevo combo creado. ¡Edita y guarda!', 'success');
 }
@@ -3382,11 +3371,8 @@ async function changeAdminCredentials(){
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
-// Mostrar spinner si no hay datos sincronizados aún
-if (!localStorage.getItem('cubashop_kv_synced') || PRODUCTS.length === 0) {
-  const grid = document.getElementById('productsGrid');
-  if (grid) grid.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#888;"><div style="font-size:32px;margin-bottom:12px;">⏳</div><p style="font-size:14px;">Cargando productos...</p></div>';
-} else {
+// Renderizar grilla si ya hay productos en memoria
+if (PRODUCTS && PRODUCTS.length > 0) {
   renderProducts();
 }
 populateAdminFields();
