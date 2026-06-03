@@ -1667,7 +1667,6 @@ main {
 // ══════════════════════════════════════
 const API_URL = 'https://lastunasshop-api.luxnet-innovate.workers.dev';
 const API_SECRET = 'lts_api_2024_secure';
-
 async function kvGet(key) {
   try {
     const r = await fetch(API_URL + '/api/' + key);
@@ -1675,7 +1674,6 @@ async function kvGet(key) {
     return await r.json();
   } catch(e) { return null; }
 }
-
 async function kvSet(key, value) {
   try {
     await fetch(API_URL + '/api/' + key, {
@@ -2144,7 +2142,7 @@ function saveProduct(id) {
   if (supplierEl) p.supplierId = supplierEl.value ? parseInt(supplierEl.value) : null;
   saveProducts();
   _patchProductCard(id);
-  renderProducts();
+  _patchPublicCard(id);
   showToast(`✅ "${p.name}" guardado`, 'success');
 }
 
@@ -2153,7 +2151,7 @@ function toggleProductActive(id) {
   if (!p) return;
   p.active = p.active === false ? true : false;
   saveProducts();
-  renderProducts();
+  _syncPublicCardVisibility(id);
   const toggleBtn = document.querySelector(`#pmc-${id} .pm-btn.toggle`);
   if (toggleBtn) toggleBtn.textContent = p.active === false ? '👁 Mostrar' : '🚫 Ocultar';
   showToast(`${p.active ? '👁 Producto visible' : '🚫 Producto oculto'}`, 'success');
@@ -2166,13 +2164,20 @@ function deleteProduct(id) {
   const idx = PRODUCTS.indexOf(p);
   PRODUCTS.splice(idx, 1);
   saveProducts();
+  // Eliminar del panel admin
   const delCard = document.getElementById(`pmc-${id}`);
   if (delCard) {
     delCard.style.transition = 'opacity 0.15s';
     delCard.style.opacity = '0';
     setTimeout(() => delCard.remove(), 150);
   }
-  renderProducts();
+  // Eliminar de la grilla pública al instante
+  const pubCard = document.querySelector(`#productsGrid [data-pid="${id}"]`);
+  if (pubCard) {
+    pubCard.style.transition = 'opacity 0.15s';
+    pubCard.style.opacity = '0';
+    setTimeout(() => pubCard.remove(), 150);
+  }
   showToast('🗑️ Producto eliminado', 'success');
 }
 
@@ -2195,8 +2200,10 @@ function addNewProduct() {
     supplierId: supplierId,
   });
   saveProducts();
-  renderProducts();
-  renderProductsManager();
+  // Añadir tarjeta al panel admin sin re-render completo
+  _appendProductManagerCard(newId);
+  // Añadir tarjeta a la grilla pública al instante
+  _appendPublicCard(newId);
   requestAnimationFrame(() => {
     const card = document.getElementById(`pmc-${newId}`);
     if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2256,6 +2263,99 @@ function _patchProductCard(id) {
     }
   }
 }
+
+// ── Helpers de actualización instantánea de la grilla pública ────────────────
+function _buildPublicCardHTML(p) {
+  const imgContent = p.image
+    ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`
+    : `<span>${p.emoji || '📦'}</span>`;
+  const stockBadge = p.stock <= 3
+    ? `<div style="position:absolute;top:8px;right:8px;background:#D62828;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;">¡Últimas ${p.stock}!</div>`
+    : '';
+  const offerBadge = p.isOffer
+    ? `<div class="offer-star-shape"><svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><polygon points="32,2 38,22 58,22 43,35 49,55 32,42 15,55 21,35 6,22 26,22" fill="#D62828" stroke="#F4A60D" stroke-width="2"/></svg><div class="offer-star-text">${p.offerLabel||'OFERTA'}</div></div>`
+    : '';
+  const users = getUsers();
+  const supplier = users.find(u => u.id === p.supplierId);
+  const rate = (supplier && supplier.rateCup) ? parseFloat(supplier.rateCup) : (parseFloat(config.rateUsdCup) || 300);
+  const cupDisplay = (p.priceCUP && p.priceCUP > 0) ? p.priceCUP.toLocaleString() : Math.round(p.priceUSD * rate).toLocaleString();
+  return `<div class="product-card" data-pid="${p.id}" style="${p.isOffer?'border-color:#F4A60D;box-shadow:0 0 12px rgba(244,166,13,.3);':''}">
+      <div class="product-img" style="position:relative">${imgContent}${stockBadge}${offerBadge}</div>
+      <div class="product-info">
+        <div class="product-tag">${p.category}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-prices">
+          <div class="price-tag"><span class="flag">🇺🇸</span><span class="amount">$${p.priceUSD}</span><span class="currency">USD</span></div>
+          <div class="price-tag"><span class="flag">🇨🇺</span><span class="amount">${cupDisplay}</span><span class="currency">CUP</span></div>
+        </div>
+        <div class="qty-row">
+          <span class="qty-label">Cantidad:</span>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty(${p.id}, -1)">−</button>
+            <span class="qty-num" id="qty-${p.id}">1</span>
+            <button class="qty-btn" onclick="changeQty(${p.id}, 1)">+</button>
+          </div>
+        </div>
+        <button class="add-btn" id="addbtn-${p.id}" onclick="addToCart(${p.id})">
+          <i class="fas fa-cart-plus"></i> Agregar al Carrito
+        </button>
+      </div>
+    </div>`;
+}
+// Actualiza la tarjeta pública de un producto (nombre, precio, imagen, etc.)
+function _patchPublicCard(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  const grid = document.getElementById('productsGrid');
+  if (!grid) return;
+  const existing = grid.querySelector(`[data-pid="${id}"]`);
+  const shouldShow = p.active !== false && p.stock > 0 && (activeCategoryFilter === 'all' || p.category === activeCategoryFilter);
+  if (shouldShow) {
+    const newHTML = _buildPublicCardHTML(p);
+    if (existing) {
+      existing.outerHTML = newHTML;
+    } else {
+      grid.insertAdjacentHTML('beforeend', newHTML);
+    }
+    productQtys[id] = productQtys[id] || 1;
+  } else if (existing) {
+    existing.remove();
+  }
+}
+// Muestra u oculta una tarjeta pública según active/stock
+function _syncPublicCardVisibility(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  const grid = document.getElementById('productsGrid');
+  if (!grid) return;
+  const existing = grid.querySelector(`[data-pid="${id}"]`);
+  const shouldShow = p.active !== false && p.stock > 0;
+  if (shouldShow && !existing) {
+    grid.insertAdjacentHTML('beforeend', _buildPublicCardHTML(p));
+    productQtys[id] = 1;
+  } else if (!shouldShow && existing) {
+    existing.style.transition = 'opacity 0.15s';
+    existing.style.opacity = '0';
+    setTimeout(() => existing.remove(), 150);
+  }
+}
+// Añade una tarjeta nueva a la grilla pública
+function _appendPublicCard(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p || p.active === false || p.stock <= 0) return;
+  const grid = document.getElementById('productsGrid');
+  if (!grid) return;
+  // Quitar el mensaje de "no hay productos" si existe
+  const empty = grid.querySelector('div[style*="grid-column"]');
+  if (empty) empty.remove();
+  grid.insertAdjacentHTML('beforeend', _buildPublicCardHTML(p));
+  productQtys[id] = 1;
+}
+// Añade una tarjeta nueva al panel admin
+function _appendProductManagerCard(id) {
+  renderProductsManager();
+}
 function renderProducts() {
   const scrollY = window.scrollY; // Preservar posición del scroll
   const grid = document.getElementById('productsGrid');
@@ -2284,7 +2384,7 @@ function renderProducts() {
          </div>`
       : '';
     return `
-    <div class="product-card" style="${p.isOffer?'border-color:#F4A60D;box-shadow:0 0 12px rgba(244,166,13,.3);':''}">
+    <div class="product-card" data-pid="${p.id}" style="${p.isOffer?'border-color:#F4A60D;box-shadow:0 0 12px rgba(244,166,13,.3);':''}">
       <div class="product-img" style="position:relative">${imgContent}${stockBadge}${offerBadge}</div>
       <div class="product-info">
         <div class="product-tag">${p.category}</div>
