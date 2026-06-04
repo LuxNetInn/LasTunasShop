@@ -1698,46 +1698,51 @@ const DEFAULT_PRODUCTS = [
   { id:8, emoji:'🍗', category:'Alimentos', name:'Pack Proteínas', desc:'Pollo, carne de res y atún en lata para una familia por dos semanas.', priceUSD:50, priceCUP:5000, stock:7, active:true, image:'' },
 ];
 
-// ── Productos: localStorage es la fuente de verdad ──────────────────────────
-// KV solo se consulta si localStorage está vacío (primer uso en navegador nuevo)
+// ── Productos: KV es la fuente de verdad ─────────────────────────────────────
+// localStorage = caché rápido para mostrar productos sin spinner al recargar.
+// Al cargar siempre se sincroniza con KV para tener los datos más recientes.
 function loadProducts() {
   const saved = localStorage.getItem('cubashop_products');
   return saved ? JSON.parse(saved) : null;
 }
-function saveProducts() {
+async function saveProducts() {
+  // 1. Guardar en localStorage inmediatamente (UI responde al instante)
   localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-  // Sync con KV en background, sin bloquear la UI
-  clearTimeout(window._kvSyncTimer);
-  window._kvSyncTimer = setTimeout(() => kvSet('products', PRODUCTS), 500);
+  // 2. Guardar en KV y esperar confirmación (sin debounce — escribe de inmediato)
+  try {
+    await kvSet('products', PRODUCTS);
+  } catch(e) {
+    console.error('Error guardando en KV:', e);
+  }
 }
-let PRODUCTS = loadProducts();
-// Si no hay datos locales, cargar desde KV (primer uso o navegador limpio)
-if (!PRODUCTS) {
-  PRODUCTS = [];
-  const grid = document.getElementById('productsGrid');
-  if (grid) grid.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#888;"><div style="font-size:32px;margin-bottom:12px;">⏳</div><p style="font-size:14px;">Cargando productos...</p></div>';
-  Promise.all([kvGet('products'), kvGet('config')]).then(function([prodData, confData]) {
-    if (prodData && Array.isArray(prodData) && prodData.length > 0) {
-      PRODUCTS = prodData;
-    } else {
-      PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-    }
+let PRODUCTS = loadProducts() || [];
+// Mostrar lo que hay en caché inmediatamente (sin spinner)
+if (PRODUCTS.length > 0) {
+  // Renderizar desde caché mientras llega KV
+  // (renderProducts() se llama abajo en el init)
+}
+// Siempre sincronizar con KV al cargar para tener los datos más recientes
+Promise.all([kvGet('products'), kvGet('config')]).then(function([prodData, confData]) {
+  if (prodData && Array.isArray(prodData) && prodData.length > 0) {
+    PRODUCTS = prodData;
     localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-    if (confData && typeof confData === 'object') {
-      config = Object.assign(config, confData);
-      localStorage.setItem('cubashop_config', JSON.stringify(config));
-    }
     renderProducts();
-  });
-} else {
-  // Hay datos locales: renderizar de inmediato, luego sync config en background
-  kvGet('config').then(function(confData) {
-    if (confData && typeof confData === 'object') {
-      config = Object.assign(config, confData);
-      localStorage.setItem('cubashop_config', JSON.stringify(config));
-    }
-  });
-}
+  } else if (PRODUCTS.length === 0) {
+    PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+    localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+    renderProducts();
+  }
+  if (confData && typeof confData === 'object') {
+    config = Object.assign(config, confData);
+    localStorage.setItem('cubashop_config', JSON.stringify(config));
+  }
+}).catch(function() {
+  // Sin conexión: usar caché local
+  if (PRODUCTS.length === 0) {
+    PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+    renderProducts();
+  }
+});
 
 // ══════════════════════════════════════
 // ESTADO
@@ -2073,11 +2078,11 @@ function handleImageUpload(id, input) {
     return;
   }
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     const p = PRODUCTS.find(x => x.id === id);
     if (p) {
       p.image = e.target.result;
-      saveProducts();
+      await saveProducts();
       // Actualizar imagen en la tarjeta del manager sin re-render completo
       const imgDiv = document.querySelector('#pmc-' + id + ' .pm-card-img');
       if (imgDiv) {
@@ -2123,7 +2128,7 @@ function autoCalcCup(id) {
   if (hintEl) hintEl.textContent = usd > 0 ? `${usd} USD × ${rate} = ${cup.toLocaleString()} CUP` : '';
 }
 
-function saveProduct(id) {
+async function saveProduct(id) {
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) return;
   p.name     = document.getElementById(`pm-name-${id}`).value.trim() || p.name;
@@ -2140,30 +2145,30 @@ function saveProduct(id) {
   }
   const supplierEl = document.getElementById(`pm-supplier-${id}`);
   if (supplierEl) p.supplierId = supplierEl.value ? parseInt(supplierEl.value) : null;
-  saveProducts();
+  await saveProducts();
   _patchProductCard(id);
   _patchPublicCard(id);
   showToast(`✅ "${p.name}" guardado`, 'success');
 }
 
-function toggleProductActive(id) {
+async function toggleProductActive(id) {
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) return;
   p.active = p.active === false ? true : false;
-  saveProducts();
+  await saveProducts();
   _syncPublicCardVisibility(id);
   const toggleBtn = document.querySelector(`#pmc-${id} .pm-btn.toggle`);
   if (toggleBtn) toggleBtn.textContent = p.active === false ? '👁 Mostrar' : '🚫 Ocultar';
   showToast(`${p.active ? '👁 Producto visible' : '🚫 Producto oculto'}`, 'success');
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) return;
   if (!confirm(`¿Eliminar "${p.name}" permanentemente?`)) return;
   const idx = PRODUCTS.indexOf(p);
   PRODUCTS.splice(idx, 1);
-  saveProducts();
+  await saveProducts();
   // Eliminar del panel admin
   const delCard = document.getElementById(`pmc-${id}`);
   if (delCard) {
@@ -2181,7 +2186,7 @@ function deleteProduct(id) {
   showToast('🗑️ Producto eliminado', 'success');
 }
 
-function addNewProduct() {
+async function addNewProduct() {
   const newId = Date.now();
   const currentUser = getCurrentUser();
   // Si es Editor, asignar el producto a sí mismo automáticamente
@@ -2199,7 +2204,7 @@ function addNewProduct() {
     image: '',
     supplierId: supplierId,
   });
-  saveProducts();
+  await saveProducts();
   // Añadir tarjeta al panel admin sin re-render completo
   _appendProductManagerCard(newId);
   // Añadir tarjeta a la grilla pública al instante
@@ -3417,7 +3422,7 @@ function getTransportFeeForMunicipio(municipio) {
 // ══════════════════════════════════════
 // SISTEMA DE COMBOS
 // ══════════════════════════════════════
-function addComboProduct() {
+async function addComboProduct() {
   const currentUser = getCurrentUser();
   const supplierId = (currentUser && currentUser.role === 'editor') ? currentUser.id : null;
   const newId = Date.now();
@@ -3436,7 +3441,7 @@ function addComboProduct() {
     comboItems: [],
     supplierId: supplierId,
   });
-  saveProducts();
+  await saveProducts();
   renderProducts();
   renderProductsManager();
   requestAnimationFrame(() => {
