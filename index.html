@@ -1741,8 +1741,7 @@ Promise.all([kvGet('products'), kvGet('config')]).then(function([prodData, confD
     localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
     renderProducts();
   } else if (PRODUCTS.length === 0) {
-    PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-    localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+    PRODUCTS = [];
     renderProducts();
   }
   if (confData && typeof confData === 'object') {
@@ -1752,7 +1751,7 @@ Promise.all([kvGet('products'), kvGet('config')]).then(function([prodData, confD
 }).catch(function() {
   // Sin conexión: usar caché local
   if (PRODUCTS.length === 0) {
-    PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+    PRODUCTS = [];
     renderProducts();
   }
 });
