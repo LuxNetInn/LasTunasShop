@@ -1721,11 +1721,32 @@ async function _kvFlush() {
   _kvPending = false;
   try {
     await kvSet('products', PRODUCTS);
+    // Backup automático con timestamp — máximo 10 backups guardados
+    _saveBackup();
   } catch(e) {
     console.error('KV write error:', e);
   } finally {
     _kvWriting = false;
     if (_kvPending) _kvFlush();
+  }
+}
+const MAX_BACKUPS = 10;
+async function _saveBackup() {
+  try {
+    const ts = new Date().toISOString().slice(0,19).replace(/[:.]/g,'-');
+    const backupKey = 'products_backup_' + ts;
+    // Guardar el backup en KV
+    await kvSet(backupKey, PRODUCTS);
+    // Actualizar el índice de backups en localStorage
+    const idxRaw = localStorage.getItem('cubashop_backup_index');
+    let idx = idxRaw ? JSON.parse(idxRaw) : [];
+    idx.push({ key: backupKey, ts });
+    // Conservar solo los últimos MAX_BACKUPS
+    if (idx.length > MAX_BACKUPS) idx = idx.slice(-MAX_BACKUPS);
+    localStorage.setItem('cubashop_backup_index', JSON.stringify(idx));
+  } catch(e) {
+    // El backup nunca interrumpe el flujo principal
+    console.warn('Backup error:', e);
   }
 }
 let PRODUCTS = loadProducts() || [];
