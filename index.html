@@ -1708,9 +1708,9 @@ function loadProducts() {
 function saveProducts() {
   // 1. Guardar en localStorage AL INSTANTE — la UI nunca espera
   localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
-  // 2. Escribir en KV en background con cola garantizada:
-  //    - Si hay una escritura en curso, se programa otra al terminar
-  //    - Siempre escribe el estado más reciente (no se pierden cambios)
+  // 2. Marcar timestamp de escritura local para proteger contra sobreescritura del KV
+  localStorage.setItem('cubashop_local_ts', Date.now().toString());
+  // 3. Escribir en KV en background con cola garantizada
   _kvFlush();
 }
 let _kvWriting = false;
@@ -1755,14 +1755,21 @@ if (PRODUCTS.length > 0) {
   // Renderizar desde caché mientras llega KV
   // (renderProducts() se llama abajo en el init)
 }
-// Siempre sincronizar con KV al cargar para tener los datos más recientes
+// Sincronizar con KV al cargar — pero NUNCA sobreescribir si hay cambios locales recientes
+const _kvLoadStart = Date.now();
 Promise.all([kvGet('products'), kvGet('config')]).then(function([prodData, confData]) {
-  if (prodData && Array.isArray(prodData) && prodData.length > 0) {
+  // Protección: si el usuario guardó algo en los últimos 30 segundos, no sobreescribir
+  const localTs = parseInt(localStorage.getItem('cubashop_local_ts') || '0');
+  const localIsNewer = (Date.now() - localTs) < 30000;
+  if (prodData && Array.isArray(prodData) && prodData.length > 0 && !localIsNewer) {
+    PRODUCTS = prodData;
+    localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
+    renderProducts();
+  } else if (PRODUCTS.length === 0 && prodData && Array.isArray(prodData)) {
     PRODUCTS = prodData;
     localStorage.setItem('cubashop_products', JSON.stringify(PRODUCTS));
     renderProducts();
   } else if (PRODUCTS.length === 0) {
-    PRODUCTS = [];
     renderProducts();
   }
   if (confData && typeof confData === 'object') {
@@ -1771,10 +1778,7 @@ Promise.all([kvGet('products'), kvGet('config')]).then(function([prodData, confD
   }
 }).catch(function() {
   // Sin conexión: usar caché local
-  if (PRODUCTS.length === 0) {
-    PRODUCTS = [];
-    renderProducts();
-  }
+  if (PRODUCTS.length === 0) renderProducts();
 });
 
 // ══════════════════════════════════════
